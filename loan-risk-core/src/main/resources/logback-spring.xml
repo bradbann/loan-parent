@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <springProperty scope="local" name="appName" source="spring.application.name"/>
+    <springProperty scope="local" name="logPath" source="logging.path"/>
+
+
+    <appender name="FILEOUT"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logPath}/${appName}.log</File>
+        <encoder>
+            <pattern>%d [%t] %5p %c:%L - %m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>256MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <FileNamePattern>${logPath}/${appName}-%d{yyyy-MM-dd}-%i.log.gz
+            </FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="FILEOUT"/>
+    </root>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!--<springProfile name="!prod">-->
+        <!--<root level="INFO">-->
+            <!--<appender-ref ref="CONSOLE"/>-->
+        <!--</root>-->
+    <!--</springProfile>-->
+
+</configuration>

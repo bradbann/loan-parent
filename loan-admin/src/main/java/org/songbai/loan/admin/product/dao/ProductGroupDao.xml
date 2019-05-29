@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.product.dao.ProductGroupDao">
+
+    <select id="findProductGroupList" resultType="org.songbai.loan.admin.product.model.ProductGroupVo">
+        select a.*,b.agency_name from loan_u_product_group a left join dream_u_agency b on a.agency_id = b.id
+        <where>
+                and a.deleted=0
+            <if test="agencyId !=null">
+                and a.agency_id=#{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="findGroupById" resultType="org.songbai.loan.model.loan.ProductGroupModel">
+        select * from loan_u_product_group where id=#{groupId} and agency_id=#{agencyId}  and deleted=0 and status=1 limit 1
+    </select>
+    <select id="findProductGroupSelected" resultType="org.songbai.loan.model.loan.ProductGroupModel">
+        select id,name  from loan_u_product_group where deleted=0 and status=1
+            <if test="agencyId !=null">
+                and agency_id=#{agencyId}
+            </if>
+    </select>
+</mapper>

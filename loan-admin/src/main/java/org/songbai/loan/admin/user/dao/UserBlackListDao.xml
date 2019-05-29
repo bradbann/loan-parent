@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.user.dao.UserBlackListDao">
+	<sql id="sql">
+		<where>
+			<if test="agencyId != null">and u.agency_id = #{agencyId}</if>
+			<if test="name != null">and u.name like concat('%', #{name}, '%')</if>
+			<if test="phone != null">and u.phone like concat('%', #{phone}, '%')</if>
+			<if test="status != null">and u.status = #{status}</if>
+			<if test="createTimeStart != null">and ub.create_time &gt;= #{createTimeStart}</if>
+			<if test="createTimeEnd != null">and ub.create_time &lt;= #{createTimeEnd}</if>
+			<if test="updateTimeStart != null">and ub.update_time &gt;= #{updateTimeStart}</if>
+			<if test="updateTimeEnd != null">and ub.update_time &lt;= #{updateTimeEnd}</if>
+		</where>
+	</sql>
+
+	<select id="getList" resultType="org.songbai.loan.admin.user.model.UserResultVo">
+		SELECT
+		u.agency_id,u.third_id,u.name,u.phone,u.status,ub.black_from,ui.idcard_num,ub.create_time,ub.update_time,ub.limit_start,ub.limit_end,ub.remark
+		FROM
+		loan_u_user_blacklist ub
+		LEFT JOIN loan_u_user u on ub.user_id = u.id
+		LEFT JOIN loan_u_user_info ui on ub.user_id = ui.user_id
+		<include refid="sql"></include>
+		ORDER BY ub.update_time DESC
+		limit #{limit},#{pageSize}
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		SELECT
+		count(1)
+		FROM
+		loan_u_user_blacklist ub
+		LEFT JOIN loan_u_user u on ub.user_id = u.id
+		LEFT JOIN loan_u_user_info ui on ub.user_id = ui.user_id
+		<include refid="sql"></include>
+	</select>
+	<select id="getListByType" resultType="org.songbai.loan.model.user.UserBlackListModel">
+		select * from loan_u_user_blacklist where type != 0
+	</select>
+
+</mapper>

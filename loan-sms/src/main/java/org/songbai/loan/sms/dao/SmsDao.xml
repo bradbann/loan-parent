@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.sms.dao.SmsDao">
+    <!--<insert id="saveSms" parameterType="sms">-->
+    <!--INSERT INTO-->
+    <!--dream_sys_sms_log(sms_phone,sms_template_id,sms_param,sms_ip,sms_status,sms_send_time,create_time)-->
+    <!--values(#{smsPhone},#{smsTemplateId},#{smsParam},inet_aton(#{smsIp}),#{smsStatus},NOW(),NOW())-->
+    <!--</insert>-->
+
+    <!--<select id="getTemplate" resultType="SmsTemplate">-->
+    <!--SELECT * FROM-->
+    <!--dream_m_sms_template-->
+    <!--where-->
+    <!--id=#{0} and is_delete =#{1} -->
+    <!--limit 1-->
+    <!--</select>-->
+
+    <select id="getSenderTemplate" resultType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        SELECT * FROM
+        dream_m_sms_template_sender
+        where template_id =#{templateId} and
+        deleted = #{isDelete}
+        limit 1
+    </select>
+
+    <select id="getSenderMessage" resultType="org.songbai.loan.model.sms.SmsSender">
+        select * from
+        dream_m_sms_sender
+        where status =#{status} and is_delete = 0  and agency_id=#{agencyId}
+
+        limit 1
+    </select>
+    <select id="getSenderTemplateVO" resultType="org.songbai.loan.vo.sms.SenderTemplateVO">
+
+        select t.`sms_type` , t.`template`,t.`tele_code`, s.*
+        from dream_m_sms_template_sender s , dream_m_sms_template t
+        where s.`template_id` = t.id
+        and t.`tele_code` = #{teleCode}
+        and t.sms_type = #{smsType}
+        and s.sender_id = #{senderId}
+        and t.`deleted` = 0
+        and s.deleted = 0
+        and t.agency_id=#{agencyId}
+        and s.agency_id=#{agencyId}
+        order by s.id desc
+        limit 1
+
+    </select>
+    <select id="getSmsTemplate" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        where agency_id=#{agencyId}
+        <if test="vestId!=null">
+          and  vest_id=#{vestId}
+        </if>  and sender_id=#{senderId} and type =#{type} and deleted=0  and status =1 limit 1
+    </select>
+    <select id="getDefaultSenderTemplate" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        where agency_id=#{agencyId} and sender_id=#{senderId} and deleted=0  and general = 1 and type =#{type} and status=1  limit 1
+    </select>
+    <select id="findSubSenderBySenderId" resultType="org.songbai.loan.model.sms.SmsSender">
+        select * from dream_m_sms_sender where super_id=#{senderId} and is_delete=0 and status=1 limit  1
+    </select>
+    <select id="findSmsSenderByStart" resultType="org.songbai.loan.model.sms.SmsSender">
+        select * from dream_m_sms_sender where status=1 and is_delete=0 and agency_id!=0
+    </select>
+
+
+</mapper>

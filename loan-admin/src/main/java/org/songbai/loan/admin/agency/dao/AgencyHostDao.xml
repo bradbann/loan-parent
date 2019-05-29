@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.agency.dao.AgencyHostDao">
+    <delete id="deleteByAgencyId">
+        delete from dream_u_agency_host where agency_id = #{agencyId}
+    </delete>
+    <select id="findHostListByAgencyId" resultType="org.songbai.loan.model.agency.AgencyHostModel">
+        select * from dream_u_agency_host where agency_id = #{agencyId}
+    </select>
+</mapper>

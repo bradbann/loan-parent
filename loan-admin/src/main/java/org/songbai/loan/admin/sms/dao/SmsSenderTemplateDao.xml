@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.sms.dao.SmsSenderTemplateDao">
+    <insert id="createSenderTemplate" useGeneratedKeys="true"
+            keyProperty="id" parameterType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        INSERT INTO
+        dream_m_sms_template_sender(template_id,sender_id,extra_param,name,sign,status,deleted,agency_id)
+        values(#{templateId},#{senderId},#{extraParam},#{name},#{sign},#{status},#{deleted},#{agencyId})
+    </insert>
+
+    <update id="updateSenderTemplate" parameterType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        update dream_m_sms_template_sender
+        <set>
+            <if test="name != null">name=#{name},</if>
+            <if test="sign != null">sign=#{sign},</if>
+            <if test="status != null">status=#{status},</if>
+            <if test="extraParam !=null">extra_param=#{extraParam},</if>
+        </set>
+        where id=#{id}  and agency_id=#{agencyId}
+    </update>
+    <select id="getAll" resultType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        select * from
+        dream_m_sms_template_sender
+        <where>
+            <if test="templateId != null">AND template_id = #{templateId}</if>
+            <if test="deleted  != null">AND deleted = #{deleted}</if>
+            <if test="agencyId  != null">AND agency_id = #{agencyId}</if>
+        </where>
+    </select>
+
+    <select id="getById" parameterType="integer" resultType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        select *
+        from
+        dream_m_sms_template_sender
+        where id=#{id} and deleted
+        =#{deleted}  and agency_id=#{agencyId}
+        limit 1
+    </select>
+
+    <select id="getSenderTemplate" parameterType="integer"
+            resultType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        select * from
+        dream_m_sms_template_sender
+        where id=#{id}  and agency_id=#{agencyId}
+        limit 1
+    </select>
+
+    <select id="pagingQuery" resultType="org.songbai.loan.admin.sms.model.SmsSenderTemplateVO">
+        select msts.*,
+        mst.name templateName ,
+        mss.name senderName
+        from dream_m_sms_template_sender msts
+        left join dream_m_sms_template mst on mst.id = msts.template_id
+        left join dream_m_sms_sender mss on mss.id = msts.sender_id
+        <where>
+            <if test="templateId != null">AND msts.template_id = #{templateId}</if>
+            <if test="deleted  != null">AND msts.deleted = #{deleted}</if>
+            <if test="senderId  != null">AND msts.sender_id = #{senderId}</if>
+            AND mst.deleted = 0  and mst.agency_id=#{agencyId}
+        </where>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQuery_count" resultType="integer">
+        select count(msts.id) from
+        dream_m_sms_template_sender msts
+        left join
+        dream_m_sms_template mst on mst.id = msts.template_id
+        <where>
+             msts.agency_id=#{agencyId}
+            <if test="templateId != null">AND msts.template_id = #{templateId}</if>
+            <if test="deleted  != null">AND msts.deleted = #{deleted}</if>
+            <if test="senderId  != null">AND msts.sender_id = #{senderId}</if>
+        </where>
+    </select>
+
+    <!-- 改变deleted来表示他的删除状态 -->
+    <update id="remove" parameterType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        update
+        dream_m_sms_template_sender set deleted =1
+        where id=#{id}
+    </update>
+
+
+    <!-- 改变deleted来表示他的删除状态 -->
+    <update id="removeByTemplateId" parameterType="integer">
+        update
+        dream_m_sms_template_sender set deleted =1
+        where
+        template_id=#{templateId}
+    </update>
+
+    <select id="findSenderTemplate" resultType="org.songbai.loan.model.sms.SmsSenderTemplate">
+        select msts.*,mst.name from
+        dream_m_sms_template_sender msts
+        left join
+        dream_m_sms_template mst on mst.id = msts.template_id
+        <where>
+            <if test="templateId !=null">
+                AND msts.template_id = #{templateId}
+            </if>
+            <if test="senderId !=null">
+                AND msts.sender_id = #{senderId}
+            </if>
+            AND msts.deleted = 0
+        </where>
+    </select>
+</mapper>

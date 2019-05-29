@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.activity.dao.ActivityDao">
+
+
+	<select id="findPopupActivityByAgencyId" resultType="org.songbai.loan.model.activity.ActivityModel">
+        select name,code,picture,url
+        from loan_u_activity
+        where status=1 and deleted=0 and agency_id=#{agencyId}
+        limit 1
+    </select>
+    <select id="findPopupActivity" resultType="org.songbai.loan.model.activity.ActivityModel">
+
+
+        select name,code,picture,url
+        from loan_u_activity
+        where status=1 and deleted=0
+          and agency_id=#{agencyId}
+          and scopes like concat('%',#{platformStr},'%')
+          and vestlist like concat('%',#{vestIdStr},'%')
+        limit 1
+
+
+
+    </select>
+</mapper>

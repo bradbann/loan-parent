@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.config.dao.TimedTaskDao">
+
+    <insert id="createTimedTask" useGeneratedKeys="true" keyProperty="id" parameterType="org.songbai.loan.model.config.TimedTaskModel">
+		insert into
+		dream_a_timed_task(type_id, task_type, type_name, time_period, time_trigger, is_open, parameters, remark, create_date,exchange_id)
+		values
+		(#{typeId,jdbcType=INTEGER}, #{taskType,jdbcType=VARCHAR},#{typeName,jdbcType=VARCHAR}, #{timePeriod,jdbcType=VARCHAR}, #{timeTrigger,jdbcType=VARCHAR}, #{isOpen,jdbcType=TINYINT}, #{parameters,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR},#{createDate,jdbcType=TIMESTAMP},#{exchangeId,jdbcType=INTEGER})
+	</insert>
+
+
+    <update id="updateTimedTask" parameterType="org.songbai.loan.model.config.TimedTaskModel">
+        update dream_a_timed_task
+        <set>
+            <if test="timePeriod != null">time_period=#{timePeriod},</if>
+            <if test="timeTrigger != null">time_trigger=#{timeTrigger},</if>
+            <if test="parameters != null">parameters=#{parameters},</if>
+            <if test="remark != null">remark=#{remark},</if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="getAllOpenTask" resultType="org.songbai.loan.model.config.TimedTaskModel">
+		select
+		id, type_id, task_type, type_name, time_period, time_trigger, is_open, parameters, remark, create_date
+		from dream_a_timed_task
+		where is_open = true
+	</select>
+
+    <delete id="deleteByIds">
+        delete from dream_a_timed_task
+        where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="changeIsOpenBIds">
+        update dream_a_timed_task set is_open = #{isOpen}
+
+        where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="querypaging" resultType="org.songbai.loan.model.config.TimedTaskModel">
+		select
+		id,  type_id, task_type, type_name, time_period, time_trigger, is_open, parameters, remark, create_date
+		from dream_a_timed_task
+		<where>
+			<if test="isOpen != null">
+				AND is_open = #{isOpen}
+			</if>
+			<if test="typeId != null">
+				AND type_id = #{typeId}
+			</if>
+			<if test="parameters != null">
+				AND parameters like concat('%',#{parameters},'%')
+			</if>
+			<if test="remark != null">
+				AND remark  like concat('%',#{remark},'%')
+			</if>
+		</where>
+		order by create_date 
+		limit #{limit}, #{size}
+	</select>
+
+    <select id="querypaging_count" resultType="integer">
+		select count(id)
+		from dream_a_timed_task
+		<where>
+			<if test="isOpen != null">
+				AND is_open = #{isOpen}
+			</if>
+			<if test="typeId != null">
+				AND type_id = #{typeId}
+			</if>
+			<if test="parameters != null">
+				AND parameters like concat('%',#{parameters},'%')
+			</if>
+			<if test="remark != null">
+				AND remark  like concat('%',#{remark},'%')
+			</if>
+		</where>
+
+	</select>
+
+    <update id="updateTimedByExchangeIdAndTopChannelId" parameterType="org.songbai.loan.model.config.TimedTaskModel">
+        update dream_a_timed_task
+        <set>
+            <if test="timeTrigger != null">time_trigger=#{timeTrigger},</if>
+            <if test="parameters != null">parameters=#{parameters}</if>
+        </set>
+        where exchange_id=#{exchangeId} AND top_channel_id=#{topChannelId} AND top_time_task_id=#{topTimeTaskId}
+    </update>
+
+
+    <delete id="deleteByExchangeIdAndTopChannelId">
+        delete from dream_a_timed_task
+                where exchange_id=#{exchangeId} AND top_channel_id=#{topChannelId} AND  top_time_task_id=#{topTimeTaskId}
+     </delete>
+
+    <select id="findTimedTaskIdByIds" resultType="org.songbai.loan.model.config.TimedTaskModel">
+        select
+        id from dream_a_timed_task
+      where exchange_id=#{exchangeId} AND top_channel_id=#{topChannelId} AND  top_time_task_id=#{topTimeTaskId} limit 1
+    </select>
+	<select id="getPushTaskByIds" resultType="java.lang.String">
+		SELECT GROUP_CONCAT(id) from dream_a_timed_task WHERE task_type = #{taskType} and parameters in (#{ids})
+	</select>
+	<select id="findOlderPushTaskByParam" resultType="org.songbai.loan.model.config.TimedTaskModel">
+		SELECT * FROM  dream_a_timed_task WHERE  parameters = #{id} and task_type = #{taskType} limit 1
+	</select>
+
+	<select id="getScheduleByParamter" resultType="org.songbai.loan.model.config.TimedTaskModel">
+		select * from dream_a_timed_task where parameters = #{paramter} limit 1
+	</select>
+
+</mapper>

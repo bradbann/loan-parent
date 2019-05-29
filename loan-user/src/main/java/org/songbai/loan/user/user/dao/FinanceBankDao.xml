@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.FinanceBankDao">
+	<select id="selectThirdBankCodeByCodeAndPlatformId" resultType="java.lang.String">
+		select third_bank_code from loan_u_finance_bank where bank_code = #{bankCode}  and pay_platform_id = #{payPlatformId}
+	</select>
+	<select id="selectAll" resultType="org.songbai.loan.model.finance.FinanceBankModel">
+		select id,icon,bank_code,bank_name from loan_u_finance_bank GROUP BY bank_code
+	</select>
+</mapper>

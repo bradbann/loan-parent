@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.chase.dao.ChaseDebtDao">
+    <update id="doBadDebt">
+        update loan_u_order set status = #{orderStatus} where id = #{id}
+    </update>
+
+
+    <select id="queryChaseCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        where t.stage = 4 and t.status in(0,3,4,5,7)
+        <include refid="base_where"/>
+    </select>
+    <select id="queryChasePageList" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        select t.*,
+        uu.third_id,uu.phone userPhone,uu.name userName,uu.vest_id,uu.channel_code,
+        uui.idcard_num,
+        dept.`name` chaseDeptName,
+        actor.`name` chaseActorName
+        FROM
+        loan_u_order t
+        LEFT JOIN loan_u_user uu ON t.user_id = uu.id
+        LEFT JOIN loan_u_user_info uui ON t.user_id = uui.user_id
+        left join dream_a_department dept on dept.id = t.chase_dept_id
+        LEFT JOIN dream_a_actor actor on actor.id = t.chase_actor_id
+        where t.stage = 4 and t.status in(0,3,4,5,7)
+        <include refid="base_where"/>
+        <choose>
+            <when test="po.ownerChaseStatus != null and  po.ownerChaseStatus == 5">
+                order by t.repayment_time desc,t.id desc
+            </when>
+            <otherwise>
+                order by t.repayment_date desc,t.id desc
+            </otherwise>
+        </choose>
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="getOrderByChaseId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order where chase_id = #{chaseId}
+    </select>
+    <select id="queryChaseExcelList" resultType="org.songbai.loan.admin.chase.vo.ChaseExcelVo">
+        select t.*,uu.phone userPhone,uu.name userName,
+        uui.idcard_num idcardNum,uui.first_contact firstContact,uui.first_phone firstPhone,
+        uui.other_contact otherContact,uui.other_phone otherPhone,pro.name productName
+        from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        left join loan_u_user_info uui on uui.user_id = t.user_id
+        left join loan_u_product pro on pro.id = t.product_id
+        where t.stage = 4 and t.status in(0,3,4,5,7)
+        <include refid="base_where"/>
+        order by t.chase_dept_id asc,t.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="getGroupChaseCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        <include refid="group_base_where"/>
+    </select>
+    <select id="findGroupChaseList" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        select t.*,
+        uu.phone userPhone,uu.name userName,uu.vest_id,uu.channel_code,
+        uui.idcard_num,
+        dept.`name` chaseDeptName,
+        actor.`name` chaseActorName
+        from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        left join dream_a_department dept on dept.id = t.chase_dept_id
+        LEFT JOIN dream_a_actor actor on actor.id = t.chase_actor_id
+        left join loan_u_user_info uui on t.user_id = uui.user_id
+        <include refid="group_base_where"/>
+        <choose>
+            <when test="po.ownerChaseStatus != null and  po.ownerChaseStatus == 5">
+                order by t.repayment_time desc,t.id desc
+            </when>
+            <otherwise>
+                order by t.repayment_date desc,t.id desc
+            </otherwise>
+        </choose>
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="queryOwnerChaseCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        where t.stage = 4
+        and t.chase_id is not null
+        and t.chase_actor_id is not null
+        <include refid="base_where"/>
+    </select>
+    <select id="queryOwnerChasePage" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        select t.*,
+        uu.third_id,uu.phone userPhone,uu.name userName,uui.idcard_num,uu.vest_id,uu.channel_code,
+        dic.name lastFeedName
+        from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        left join loan_u_user_info uui on t.user_id = uui.user_id
+        LEFT JOIN dream_a_dictionary dic on dic.type = 'chase_type' and dic.value = t.last_feed_type
+        where t.stage = 4
+        and t.chase_id is not null
+        and t.chase_actor_id is not null
+        <include refid="base_where"/>
+        <choose>
+            <when test="po.ownerChaseStatus != null and  po.ownerChaseStatus == 5">
+                order by t.repayment_time desc,t.id desc
+            </when>
+            <otherwise>
+                order by t.repayment_date desc,t.id desc
+            </otherwise>
+        </choose>
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="queryOwnerChaseExcelList" resultType="org.songbai.loan.admin.chase.vo.ChaseExcelVo">
+        select t.*,uu.phone userPhone,uu.name userName,
+        uui.idcard_num idcardNum,uui.first_contact firstContact,uui.first_phone firstPhone,
+        uui.other_contact otherContact,uui.other_phone otherPhone,pro.name productName
+        from loan_u_order t left join loan_u_user uu on t.user_id = uu.id
+        left join loan_u_user_info uui on uui.user_id = t.user_id
+        left join loan_u_product pro on pro.id = t.product_id
+        where t.stage = 4 and t.chase_id is not null and t.chase_actor_id is not null
+        <include refid="base_where"/>
+        <choose>
+            <when test="po.ownerChaseStatus != null and  po.ownerChaseStatus == 5">
+                order by t.repayment_time desc,t.id desc
+            </when>
+            <otherwise>
+                order by t.repayment_date desc,t.id desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <sql id="group_base_where">
+        <where>
+            t.stage = 4 and t.status in(0,3,4,5,7) and uu.deleted = 0
+            <if test="po.userPhone != null ">
+                AND uu.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startExceeDays != null ">
+                AND t.exceed_days &gt;= #{po.startExceeDays}
+            </if>
+            <if test="po.endExceeDays != null ">
+                AND t.exceed_days &lt;= #{po.endExceeDays}
+            </if>
+            <if test="po.guest != null ">
+                AND t.guest = #{po.guest}
+            </if>
+            <if test="po.startRepaymentDate != null ">
+                AND t.repayment_date &gt;= #{po.startRepaymentDate}
+            </if>
+            <if test="po.endRepaymentDate != null ">
+                AND t.repayment_date &lt;= #{po.endRepaymentDate}
+            </if>
+            <if test="po.orderNumber != null ">
+                AND t.order_number = #{po.orderNumber}
+            </if>
+            <if test="po.agencyId != null ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.deptId != null ">
+                AND t.chase_dept_id = #{po.deptId}
+            </if>
+            <if test="po.chaseActorId != null ">
+                AND t.chase_actor_id = #{po.chaseActorId}
+            </if>
+            <if test="po.chaseStatus != null and po.chaseStatus == 1 ">
+                AND t.chase_id is not null
+            </if>
+            <if test="po.chaseStatus != null and po.chaseStatus == 0 ">
+                AND t.chase_id is null
+            </if>
+            <if test="po.chaseActorStatus != null and po.chaseActorStatus == 1">
+                AND t.chase_actor_id is not null
+            </if>
+            <if test="po.chaseActorStatus != null and po.chaseActorStatus == 0 ">
+                AND t.chase_actor_id is null
+            </if>
+            <if test="deptIds != null ">
+                AND t.chase_dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+            <if test="po.ownerChaseStatus != null and po.ownerChaseStatus != ''">
+                <choose>
+                    <when test="po.ownerChaseStatus == 5">
+                        and t.status in (5,7)
+                    </when>
+                    <otherwise>
+                        and t.status = #{po.ownerChaseStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="po.vestId != null ">
+                and uu.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and uu.channel_code = #{po.channelCode}
+            </if>
+        </where>
+    </sql>
+    <sql id="base_where">
+        and uu.deleted = 0
+        <if test="po.userPhone != null and po.userPhone != '' ">
+            AND uu.phone like concat('%',#{po.userPhone},'%')
+        </if>
+        <if test="po.startExceeDays != null and po.startExceeDays != ''">
+            AND t.exceed_days &gt;= #{po.startExceeDays}
+        </if>
+        <if test="po.endExceeDays != null and po.endExceeDays != ''">
+            AND t.exceed_days &lt;= #{po.endExceeDays}
+        </if>
+        <if test="po.guest != null and po.guest != ''">
+            AND t.guest = #{po.guest}
+        </if>
+        <if test="po.startRepaymentDate != null and po.startRepaymentDate != ''">
+            AND t.repayment_date &gt;= #{po.startRepaymentDate}
+        </if>
+        <if test="po.endRepaymentDate != null and po.endRepaymentDate != ''">
+            AND t.repayment_date &lt;= #{po.endRepaymentDate}
+        </if>
+        <if test="po.orderNumber != null and po.orderNumber != ''">
+            AND t.order_number = #{po.orderNumber}
+        </if>
+        <if test="po.agencyId != null and po.agencyId != ''">
+            AND t.agency_id = #{po.agencyId}
+        </if>
+        <if test="po.deptId != null and po.deptId != ''">
+            AND t.chase_dept_id = #{po.deptId}
+        </if>
+        <if test="po.chaseActorId != null and po.chaseActorId != ''">
+            AND t.chase_actor_id = #{po.chaseActorId}
+        </if>
+        <if test="po.chaseStatus != null and po.chaseStatus == 1 ">
+            AND t.chase_id is not null
+        </if>
+        <if test="po.chaseStatus != null and po.chaseStatus == 0 ">
+            AND t.chase_id is null
+        </if>
+        <if test="po.chaseActorStatus != null and po.chaseActorStatus == 1">
+            AND t.chase_actor_id is not null
+        </if>
+        <if test="po.chaseActorStatus != null and po.chaseActorStatus == 0 ">
+            AND t.chase_actor_id is null
+        </if>
+        <if test="po.ownerChaseStatus != null and po.ownerChaseStatus != ''">
+            <choose>
+                <when test="po.ownerChaseStatus == 5">
+                    and t.status in (5,7)
+                </when>
+                <otherwise>
+                    and t.status = #{po.ownerChaseStatus}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="po.vestId != null ">
+            and uu.vest_id = #{po.vestId}
+        </if>
+        <if test="po.channelCode != null ">
+            and uu.channel_code = #{po.channelCode}
+        </if>
+    </sql>
+</mapper>

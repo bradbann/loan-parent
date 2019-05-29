@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.ActorReviewOrderDao">
+    <update id="updateActorReviewInfo">
+        update loan_s_actor_review
+        <set>
+            <if test="model.reviewCount != null ">review_count = review_count + #{model.reviewCount},</if>
+            <if test="model.reviewNewSuccCount != null ">
+                review_new_succ_count = review_new_succ_count + #{model.reviewNewSuccCount},
+            </if>
+            <if test="model.reviewOldSuccCount != null ">
+                review_old_succ_count = review_old_succ_count + #{model.reviewOldSuccCount},
+            </if>
+            <if test="model.reviewNewFailCount != null ">review_new_fail_count = review_new_fail_count + 1,</if>
+            <if test="model.reviewOldFailCount != null ">review_old_fail_count = review_old_fail_count + 1,</if>
+            <if test="model.firstOverdueNewCount != null ">
+                first_overdue_new_count = first_overdue_new_count + #{model.firstOverdueNewCount},
+            </if>
+            <if test="model.firstOverdueOldCount != null ">
+                first_overdue_old_count = first_overdue_old_count + #{model.firstOverdueOldCount},
+            </if>
+            <if test="model.inOverdueNewCount != null ">
+                in_overdue_new_count = in_overdue_new_count + #{model.inOverdueNewCount} ,
+            </if>
+            <if test="model.inOverdueOldCount != null ">
+                in_overdue_old_count = in_overdue_old_count + #{model.inOverdueOldCount} ,
+            </if>
+            <if test="model.expireNewCount != null ">expire_new_count = expire_new_count + 1,</if>
+            <if test="model.expireOldCount != null ">expire_old_count = expire_old_count + 1,</if>
+        </set>
+        where id = #{model.id}
+
+    </update>
+
+    <select id="getInfoByAgencyId" resultType="org.songbai.loan.model.statistic.ActorReviewOrderModel">
+		select * from loan_s_actor_review
+		where agency_id = #{agencyId} and actor_id = #{actorId} and calc_date = #{calcDate} and vest_id = #{vestId}
+	</select>
+
+
+</mapper>

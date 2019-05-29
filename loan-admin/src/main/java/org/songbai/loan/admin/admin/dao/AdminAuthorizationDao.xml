@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminAuthorizationDao">
+
+
+	<insert id="createAuthorization" parameterType="org.songbai.loan.admin.admin.model.AdminAuthorizationModel" useGeneratedKeys="true" keyProperty="id">
+		insert into 
+		dream_a_authorization
+		(actor_id, authority_id, data_id,dept_id)
+		values (#{actorId, jdbcType=INTEGER}, #{authorityId, jdbcType=INTEGER},#{dataId,jdbcType=INTEGER},#{deptId})
+	</insert>
+	
+	<update id="updatePermission" parameterType="org.songbai.loan.admin.admin.model.AdminAuthorizationModel">
+		update dream_a_authorization
+		<set>
+			<if test="actorId != null">actor_id = #{actorId},</if>
+			<if test="authorityId != null">authority_id = #{authorityId},</if>
+		</set>
+		where id = #{id} and data_id = #{dataId}
+	</update>
+	<select id="pagingQueryPermissions" parameterType="java.util.HashMap" resultType="org.songbai.loan.admin.admin.model.AdminAuthorizationModel">
+		select actor_id, actor_id
+		from dream_a_authorization
+		<where>
+			<if test="actorId != null">AND actor_id = #{actorId}</if>
+			<if test="authorityId != null">AND authority_id = #{authorityId}</if>
+			<if test="dataId != null">AND data_id = #{dataId}</if>
+		</where>
+	</select>
+	<delete id="deleteAuthorization">
+		delete from dream_a_authorization
+		<where>
+			<if test="actorId != null">AND actor_id = #{actorId}</if>
+			<if test="authorityId != null">AND authority_id = #{authorityId}</if>
+			<if test="dataId != null">AND data_id = #{dataId}</if>
+		</where>
+	</delete>
+	
+	<delete id="deleteAuthorizationByActorIdAuthorityIds">
+		delete from dream_a_authorization
+		<where>
+			<if test="actorId != null">AND actor_id = #{actorId}</if>
+			<if test="authorityIds != null">
+			AND authority_id in
+			<foreach collection="authorityIds" item="authorityId" index="index" open="(" separator="," close=")">
+					#{authorityId}
+				</foreach>
+			</if>
+
+			<if test="dataId != null">
+				and data_id = #{dataId}
+			</if>
+		</where>
+	</delete>
+	<delete id="deleteAuthorizationByDeptIdAuthorityIds">
+		delete from dream_a_authorization
+		<where>
+			<if test="deptId != null">AND dept_id = #{deptId}</if>
+			<if test="authorityIds != null">
+				AND authority_id in
+				<foreach collection="authorityIds" item="authorityId" index="index" open="(" separator="," close=")">
+					#{authorityId}
+				</foreach>
+			</if>
+
+			<if test="dataId != null">
+				and data_id = #{dataId}
+			</if>
+		</where>
+	</delete>
+</mapper>

@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.order.dao.OrderDao">
+    <update id="updateOrderActorId">
+        update loan_u_order
+        set auth_status = 1,
+            actor_id    = #{actorId},
+            opt_time    = #{date}
+        where agency_id = #{agencyId}
+          and stage = 2
+          and status = 1
+          and auth_status = 0
+        limit #{limit}
+    </update>
+
+    <update id="updateOrderStatus">
+        update loan_u_order set
+        <if test="orderStage != null ">
+            stage = #{orderStage},
+        </if>
+        <if test="orderStatus != null ">
+            status = #{orderStatus},
+        </if>
+        review_id = #{operator},review_time=#{operaDate}
+        where id = #{orderId}
+    </update>
+    <update id="returnOrderById">
+        update loan_u_order t
+        set auth_status = 0,actor_id = null ,opt_time = null
+        where id = #{orderId}
+    </update>
+    <update id="updateOrderPayment">
+        update loan_u_order
+        <set>
+            <if test="stage != null">stage=#{stage},</if>
+            <if test="status != null">status=#{status},</if>
+            <if test="transferTime != null">transfer_time=#{transferTime},</if>
+            <if test="remark != null">remark=#{remark},</if>
+            <if test="againDate != null">again_date=#{againDate},</if>
+            <if test="repaymentDate != null">repayment_date=#{repaymentDate},</if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateOrderDeductMoney">
+        update loan_u_order
+        <set>
+            <if test="deductMoney != null">deduct_money=deduct_money+#{deductMoney},</if>
+            <if test="deductMoney != null">payment=payment-#{deductMoney},</if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateOrderOverdue">
+
+        update loan_u_order
+        <set>
+            exceed_days=exceed_days+1,
+            <if test="orderStatus != null">
+                status=#{orderStatus},
+            </if>
+            <if test="exceedFee != null">
+                exceed_fee=exceed_fee+#{exceedFee},
+                payment=payment+#{exceedFee}
+            </if>
+        </set>
+        where id=#{id}
+
+
+    </update>
+    <update id="updateOrderChaseInfoById">
+        update loan_u_order set chase_dept_id = #{chaseDeptId},chase_id = #{chaseId},chase_actor_id = #{chaseActorId},chase_date = #{chaseDate}
+        where id = #{id}
+    </update>
+    <update id="updateOrderDeductMoneyComplate">
+        update loan_u_order
+        <set>
+            <if test="deductMoney != null">deduct_money=deduct_money+#{deductMoney},</if>
+            <if test="deductMoney != null">payment=payment-#{deductMoney},</if>
+            <if test="deductMoney != null">already_money=already_money+#{deductMoney},</if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <select id="queryOrderCount" resultType="java.lang.Integer">
+        select count(1) from
+        loan_u_order t left join dream_a_actor daa ON daa.id = t.actor_id,
+        loan_u_user uu,risk_user_risk_order uro
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryOrderPage" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        SELECT
+        t.*,uu.third_id,
+        uu.phone userPhone, uu.NAME userName ,uu.vest_id,uu.channel_code,
+        daa.name actorName,uro.scoring
+        FROM
+        loan_u_order t left join dream_a_actor daa ON daa.id = t.actor_id,
+        loan_u_user uu,risk_user_risk_order uro
+        <include refid="base_where"/>
+        order by t.create_time desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+
+    <select id="getOwnerReviceOrder" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        select t.*,uu.third_id,uu.phone userPhone,uu.name userName,uu.vest_id,uu.channel_code,uro.scoring
+        from loan_u_order t,
+        loan_u_user uu,risk_user_risk_order uro
+        <include refid="base_where"/>
+        <if test="actorId != null ">
+            AND t.actor_id = #{actorId}
+        </if>
+    </select>
+    <select id="findOrderListByReview" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        <where>
+            stage = 2 and status = 1 and auth_status = 1
+            <if test="agencyId != null ">
+                AND agency_id = #{agencyId}
+            </if>
+            and order_number in
+            <foreach collection="orderNumbers" item="orderNumber" index="index" open="("
+                     separator="," close=")">
+                #{orderNumber}
+            </foreach>
+        </where>
+        order by id desc
+    </select>
+
+    <sql id="base_where">
+        <where>
+            t.user_id = uu.id and t.order_number = uro.order_number and uu.deleted = 0
+            <if test="po.agencyId != null and po.agencyId != '' ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.orderStage != null and po.orderStage != '' ">
+                AND t.stage = #{po.orderStage}
+            </if>
+            <if test="po.orderStatus != null ">
+                AND t.status = #{po.orderStatus}
+            </if>
+            <if test="po.orderAuthStatus != null and po.orderAuthStatus != '' ">
+                AND t.auth_status = #{po.orderAuthStatus}
+            </if>
+            <if test="po.userPhone != null and po.userPhone != '' ">
+                AND uu.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.channelCode != null and po.channelCode != '' ">
+                AND uu.channel_code = #{po.channelCode}
+            </if>
+            <if test="po.vestId != null and po.vestId != '' ">
+                and uu.vest_id = #{po.vestId}
+            </if>
+            <if test="po.startDate!=null and po.startDate != '' ">
+                And t.create_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null and po.endDate != '' ">
+                And t.create_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.paymentTimeStart!=null and po.paymentTimeStart != '' ">
+                And t.repayment_date &gt;= #{po.paymentTimeStart}
+            </if>
+            <if test="po.paymentTimeEnd!=null and po.paymentTimeEnd != '' ">
+                And t.repayment_date &lt;= #{po.paymentTimeEnd}
+            </if>
+            <if test="po.realPaymentTimeStart!=null and po.realPaymentTimeStart != '' ">
+                And t.repayment_time &gt;= #{po.realPaymentTimeStart}
+            </if>
+            <if test="po.realPaymentTimeEnd!=null and po.realPaymentTimeEnd != '' ">
+                And t.repayment_time &lt;= #{po.realPaymentTimeEnd}
+            </if>
+            <if test="po.actorId != null and po.actorId != '' ">
+                and t.actor_id = #{po.actorId}
+            </if>
+            <if test="po.orderNumber != null and po.orderNumber != '' ">
+                and t.order_number = #{po.orderNumber}
+            </if>
+            <if test="po.isDeduct != null ">
+                <if test="po.isDeduct == 0 ">
+                    and not EXISTS (select 1 from loan_a_finance_deduct where order_id = t.id)
+                </if>
+                <if test="po.isDeduct == 1">
+                    and EXISTS (select 1 from loan_a_finance_deduct where order_id = t.id)
+                </if>
+            </if>
+            <if test="po.guest != null and po.guest != '' ">
+                and t.guest = #{po.guest}
+            </if>
+        </where>
+    </sql>
+
+    <select id="findPaymentCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        <include refid="payment_sql"/>
+    </select>
+    <select id="findPaymentList" resultType="org.songbai.loan.admin.order.vo.OrderPaymentVO">
+        select
+        o.review_time,o.create_time,o.order_number,o.days,o.status,o.loan,o.obtain,o.review_time,o.remark,o.review_id,
+        u.phone as userPhone ,ua.name as username,u.vest_id as vestId,u.channel_code as channelCode
+        from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        left join loan_u_user_info ua on u.id=ua.user_id
+        <include refid="payment_sql"/>
+        order by o.review_time desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <sql id="payment_sql">
+        <where>
+            o.stage=3 and auth_status=1 and u.deleted = 0
+            <if test="po.agencyId !=null">
+                and o.agency_id=#{po.agencyId}
+            </if>
+            <if test="po.status !=null">
+                and o.status=#{po.status}
+            </if>
+            <if test="po.status ==null">
+                and o.status in (1,8)
+            </if>
+            <if test="po.orderNumber !=null">
+                and o.order_number=#{po.orderNumber}
+            </if>
+            <if test="po.userPhone !=null">
+                and u.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startDate!=null">
+                And o.review_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And o.review_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.reviewId!=null">
+                And o.review_id = #{po.reviewId}
+            </if>
+            <if test="po.vestId != null ">
+                and u.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and u.channel_code = #{po.channelCode}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="getOrderCountByUserId" resultType="java.lang.Integer">
+        <if test="map.flag != null">
+            select COUNT(1) from (
+        </if>
+        SELECT COUNT(1) FROM `loan_u_order` where
+        user_id in (${userIds})
+        <if test="map.stage != null">
+            and stage = #{map.stage}
+        </if>
+        <if test="map.status != null">
+            and status = #{map.status}
+        </if>
+        <if test="map.autoPayment != null">
+            and chase_id is not null
+        </if>
+        <if test="map.exceedDays != null">
+            and exceed_days != 0
+        </if>
+        <if test="map.flag != null">
+            GROUP BY agency_id ) a
+        </if>
+    </select>
+
+    <select id="findRepayOrderCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        <include refid="repay_where"/>
+    </select>
+    <select id="findRepayOrderCountList" resultType="org.songbai.loan.admin.order.vo.OrderRepayVO">
+        select
+        o.order_number,o.days,o.status,o.loan,o.exceed_days,o.exceed_fee,o.payment,o.already_money,o.deduct_money,o.transfer_time,o.repayment_date,
+        u.phone as userPhone ,ua.name as username,u.agency_id as agencyId,u.vest_id as vestId
+        from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        left join loan_u_user_info ua on u.id=ua.user_id
+        <include refid="repay_where"/>
+        order by repayment_date asc ,o.id asc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findRepayOrderByOrderNumber" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order where order_number=#{orderNumber} and stage=4 and status in (1,4) limit 1
+    </select>
+    <select id="queryChaseOrderList" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where stage = 4 and status in (1,4) and repayment_date &lt; #{date}
+        order by id desc
+        limit #{limit},#{pageSize}
+    </select>
+    <select id="selectInfoByOrderNumb" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where order_number = #{orderNumber} limit 1
+    </select>
+    <select id="findOrderListByOrderNumbs" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where order_number in
+        <foreach collection="orderNumbers" item="orderNumber" index="index" open="("
+                 separator="," close=")">
+            #{orderNumber}
+        </foreach>
+        order by id desc
+    </select>
+    <select id="selectOrderByOrderNumberAndAgencyId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from  loan_u_order
+        where  order_number=#{orderNumber} and  agency_id=#{agencyId} limit 1
+    </select>
+    <select id="findRecentOrderByUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where user_id=#{userId}
+        order by id
+        desc limit 1
+    </select>
+    <select id="findOrderOverdueCountByUserId" resultType="java.lang.Integer">
+        select count(1) from loan_u_order
+        where user_id=#{userId} and stage=4 and status in (4,5,7)
+    </select>
+    <select id="findOrderOverdueCountByUserIdAndDays" resultType="java.lang.Integer">
+        select count(1) from loan_u_order
+        where user_id=#{userId} and stage=4 and status in (4,5,7) and exceed_days &gt;=#{days}
+    </select>
+    <sql id="repay_where">
+        <where>
+            o.stage=4 and u.deleted = 0
+            <if test="po.agencyId !=null">
+                and o.agency_id=#{po.agencyId}
+            </if>
+            <if test="po.orderNumber !=null">
+                and o.order_number=#{po.orderNumber}
+            </if>
+            <if test="po.userPhone !=null">
+                and u.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.status!=null">
+                and o.status = #{po.status}
+            </if>
+            <if test="po.status==null">
+                and o.status in (1,3,4)
+            </if>
+            <if test="po.vestId != null ">
+                and u.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and u.channel_code = #{po.channelCode}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findTodayRepayOrder" resultType="java.lang.Integer">
+        select user_id from loan_u_order
+        where  stage=4 and status=1
+          and repayment_date=#{today} and agency_id=#{agencyId}
+    </select>
+    <select id="findOrderOverdueByAgencyId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where stage=4 and status=4 and agency_id=#{agencyId}
+    </select>
+
+    <select id="queryAgencyGroupCount" resultType="java.util.Map">
+        select count(1) orderCount,IFNULL(sum( IF ( t.stage = 2 AND t.STATUS = 1, 1, 0 )),0) waitCount
+        from loan_u_order t
+        <where>
+            <if test="agencyId != null ">
+                AND t.agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="findStatisticOrderByAgencyIdAndDate"
+            resultType="org.songbai.loan.admin.statistic.model.vo.StatisHomeVO">
+        select
+        ifnull(count(1),0) as orderCount,
+        ifnull(sum(if(guest=1,1,0)),0) as newCount,
+        ifnull(sum(if(guest!=1,1,0)),0) as oldCount
+        from
+        loan_u_order
+        <where>
+            DATE_FORMAT(create_time,'%Y-%m-%d') = #{date}
+            <if test="agencyId!=null">
+                and agency_id=#{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="getMachineFailCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order t ,risk_user_risk_order uro,loan_u_user uu
+        <include refid="machine_where"/>
+    </select>
+    <select id="findMachineFailList" resultType="org.songbai.loan.admin.order.vo.OrderMachineVo">
+        select t.order_number,t.create_time orderTime,t.remark,t.agency_id,
+        uu.phone userPhone,uu.name userName,uro.scoring,uro.risk_result_msg
+        from loan_u_order t,risk_user_risk_order uro,loan_u_user uu
+        <include refid="machine_where"/>
+        order by t.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="selectWaitTransferOrderByAgencyId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order where stage = 3 and status = 1 and agency_id = #{agencyId}
+    </select>
+    <select id="queryCommonDebt" resultType="java.util.Map">
+        select count(1) orderCount,
+        sum(IF(t.stage = 1 and t.`status` = 3,1,0)) machineFailCount,
+        sum(IF(t.stage = 2 and t.`status` = 3,1,0)) reviewFailCount,
+        sum(IF(t.stage = 4 and t.`status` in (2,5,6,7),1,0)) repaymentCount,
+        sum(IF(t.stage > 1 and t.`status` = 1,1,0)) borrowCount,
+        sum(IF(t.exceed_days > 0, 1, 0 ) ) chaseCount,
+        sum(IF(t.exceed_days > 0 AND t.`status` = 4, 1, 0 ) ) exceedCount
+        FROM loan_u_order t
+        <where>
+            <if test="agencyId != null ">
+                and t.agency_id = #{agencyId}
+            </if>
+            <if test="userIds != null ">
+                and t.user_id in
+                <foreach collection="userIds" item="userId" index="index" open="("
+                         separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="findUserOrderHistList" resultType="org.songbai.loan.admin.order.vo.OrderPageVo">
+        select t.*,uu.vest_id,uu.channel_code
+        from loan_u_order t,loan_u_user uu
+        <where>t.user_id = uu.id
+            <if test="agencyId != null ">
+                and t.agency_id = #{agencyId}
+            </if>
+            <if test="userIds != null ">
+                and t.user_id in
+                <foreach collection="userIds" item="userId" index="index" open="("
+                         separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        order by t.create_time desc
+    </select>
+
+    <sql id="machine_where">
+        <where>
+            t.order_number = uro.order_number and t.user_id = uu.id and t.stage = 1 and t.status = 3 and uu.deleted = 0
+            <if test="po.agencyId != null ">
+                and t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.userPhone != null ">
+                and uu.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startDate!=null">
+                And t.create_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And t.create_time &lt;= #{po.endDate}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectOrderByIdsAndAgencyId" resultType="org.songbai.loan.model.loan.OrderModel">
+
+        select * from loan_u_order
+        <where>
+            <if test="orderNumbers != null">
+                <foreach collection="orderNumbers" item="item" open="and order_number in(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="agencyId != null">and agency_id = #{agencyId}</if>
+        </where>
+
+    </select>
+    <select id="findOrderListByRepayMentDate" resultType="org.songbai.loan.model.loan.OrderModel">
+        select t.* from loan_u_order t where t.repayment_date = #{repaymentDate}
+        <if test="agencyId != null ">
+            and agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="finRecentOrderByUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from  loan_u_order where  user_id=#{userId} order by id desc limit 1
+    </select>
+
+
+</mapper>

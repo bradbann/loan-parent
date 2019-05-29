@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.channel.dao.ChannelDao">
+    <select id="getInfoByChannelCode" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel where channel_code = #{channleCode}
+        <if test="channleStatus != null ">
+            AND channel_status = #{channleStatus}
+        </if>
+        <if test="agencyId != null ">
+            and agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="getChannelCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_agency_channel t
+        <include refid="base_where"/>
+    </select>
+    <select id="findChannelList" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select t.* from loan_a_agency_channel t
+        <include refid="base_where"/>
+        order by t.id desc
+        limit #{limit},#{pageSize}
+    </select>
+    <select id="findChannelCodeList" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select id,channel_name
+        from loan_a_agency_channel
+        where channel_status = 1
+        <if test="agencyId != null ">
+            AND agency_id = #{agencyId}
+        </if>
+        order by id desc
+    </select>
+    <select id="getMyCustomerCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_channel_user t
+        <include refid="channel_user_where"/>
+    </select>
+    <select id="findMyCustomerList" resultType="org.songbai.loan.admin.channel.model.vo.ChannelUserVo">
+        select t.id,t.agency_id,t.channel_id,t.user_phone,t.create_time,ac.channel_name
+        from loan_u_channel_user t left join loan_a_agency_channel ac on t.channel_id = ac.id
+        <include refid="channel_user_where"/>
+        order by t.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="findChannelByAgencyId" resultType="org.songbai.loan.admin.channel.model.vo.AgencyChannelVo">
+        select id,channel_name,channel_code from loan_a_agency_channel where agency_id=#{agencyId}
+    </select>
+    <select id="findChannelNameByAgencyIdAndChannelCode" resultType="java.lang.String">
+        select channel_name from loan_a_agency_channel where agency_id=#{agencyId} and channel_code=#{channelCode} limit 1
+    </select>
+
+    <sql id="channel_user_where">
+        <where>
+            <if test="po.channelId != null ">
+                and t.channel_id = #{po.channelId}
+            </if>
+            <if test="po.agencyId != null ">
+                and t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.startDate!=null">
+                And t.create_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And t.create_time &lt;= #{po.endDate}
+            </if>
+            <if test="channelIds != null ">
+                and t.channel_id in
+                <foreach collection="channelIds" item="channelId" index="index" open="("
+                         separator="," close=")">
+                    #{channelId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+    <sql id="base_where">
+        <where>
+            t.id != 0
+            <if test="model.agencyId != null ">
+                AND t.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.landCode != null">
+                AND t.land_code = #{model.landCode}
+            </if>
+            <if test="model.channelStatus != null ">
+                and t.channel_status = #{model.channelStatus}
+            </if>
+            <if test="model.vestId != null ">
+                and t.vest_id = #{model.vestId}
+            </if>
+            <if test="model.channelCode != null ">
+                and t.channel_code = #{model.channelCode}
+            </if>
+        </where>
+    </sql>
+</mapper>

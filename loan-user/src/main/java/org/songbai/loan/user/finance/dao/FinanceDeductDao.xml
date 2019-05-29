@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.finance.dao.FinanceDeductDao">
+    <update id="updateDeductMoney">
+      update loan_a_finance_deduct set deduct_money = deduct_money+ #{money}, deduct_num = deduct_num + 1  where id = #{id}
+    </update>
+    <select id="selectFinanceDeductFlowByDeductId" resultType="org.songbai.loan.model.loan.FinanceDeductFlowModel">
+        select * from loan_a_finance_deduct_flow where deduct_id = #{deductId} order by id desc
+    </select>
+
+
+    <select id="selectLastFinanceDeductFlowByDeductId" resultType="org.songbai.loan.model.loan.FinanceDeductFlowModel">
+        select * from loan_a_finance_deduct_flow where deduct_id = #{deductId} order by id desc limit 1
+    </select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.sms.dao.SmsSenderDao">
+	<insert id="createSenderMessage" useGeneratedKeys="true"
+		keyProperty="id" parameterType="org.songbai.loan.model.sms.SmsSender">
+		INSERT INTO
+		dream_m_sms_sender(type,account,password,status,is_delete,name,agency_id)
+		values(#{type},#{account},#{password},#{status},#{isDelete},#{name},#{agencyId})
+	</insert>
+	<update id="updateSenderMessage" parameterType="org.songbai.loan.model.sms.SmsSender">
+		update dream_m_sms_sender
+		<set>
+			<if test="type != null">type=#{type},</if>
+			<if test="account != null">account=#{account},</if>
+			<if test="password != null">password=#{password},</if>
+			<if test="status != null">status=#{status},</if>
+			<if test="name != null">name=#{name},</if>
+		</set>
+		where id =#{id}  and agency_id=#{agencyId}
+	</update>
+	<select id="pagingQuery" resultType="org.songbai.loan.model.sms.SmsSender">
+		select id, name, account,password ,status,type ,create_time,update_time,data,agency_id from dream_m_sms_sender
+		<where>
+            <if test="agencyId !=null">
+                AND agency_id=#{agencyId}
+            </if>
+
+			<if test="type !=null">
+				AND type =#{type}
+			</if>
+			<if test="status !=null">
+				AND status = #{status}
+			</if>
+			<if test="isDelete !=null">
+				AND is_delete = #{isDelete}
+			</if>
+		</where>
+		limit #{limit}, #{size}
+	</select>
+
+	<select id="pagingQuery_count" resultType="integer">
+		select count(id) from dream_m_sms_sender
+		<where>
+             agency_id=#{agencyId}
+			<if test="type !=null">
+				AND type =#{type}
+			</if>
+			<if test="status !=null">
+				AND status = #{status}
+			</if>
+			<if test="isDelete !=null">
+				AND is_delete = #{isDelete}
+			</if>
+		</where>
+	</select>
+
+	<select id="getSenderByStatus" resultType="integer">
+		select count(id) from
+		dream_m_sms_sender where status = #{status} and is_delete =
+		#{isDelete} and id !=#{id}  and agency_id=#{agencyId}
+	</select>
+
+	<!-- 改变is_delete来表示他的删除状态 -->
+	<update id="remove" parameterType="org.songbai.loan.model.sms.SmsSender">
+		update
+		dream_m_sms_sender set is_delete = 1
+		where id=#{id} and agency_id=#{agencyId}
+	</update>
+
+	<select id="getSenderMsg" resultType="org.songbai.loan.model.sms.SmsSender">
+		select * from
+		dream_m_sms_sender
+		<where>
+             agency_id=#{agencyId}
+			<if test="type !=null">
+				AND type =#{type}
+			</if>
+			AND is_delete = 0
+		</where>
+		limit 1
+	</select>
+
+	<select id="findById" resultType="org.songbai.loan.model.sms.SmsSender">
+		select * from
+		dream_m_sms_sender where id =#{id}  and agency_id=#{agencyId} limit 1
+	</select>
+
+	<update id="updateStatus" parameterType="integer">
+		update
+		dream_m_sms_sender set status = 1
+		where id != #{id}
+	</update>
+	
+	<select id = "getList" resultType="org.songbai.loan.model.sms.SmsSender">
+    	select name,id from dream_m_sms_sender where is_delete = 1  and agency_id=#{agencyId}
+    </select>
+    <select id="findSenderByAgencyIdAndType" resultType="org.songbai.loan.model.sms.SmsSender">
+        select * from dream_m_sms_sender where agency_id=#{agencyId} and type=#{type} and is_delete=0 limit 1
+    </select>
+    <select id="findStartSenderByAgencyId" resultType="java.lang.Integer">
+        select  count(1) from dream_m_sms_sender where agency_id=#{agencyId} and id!=#{senderId} and status=1 and is_delete=0
+    </select>
+    <select id="getSenderDetail" resultType="org.songbai.loan.model.sms.SmsSender">
+        select id, name, account,password ,status
+        from dream_m_sms_sender
+        where agency_id=#{agencyId} and id=#{id} limit 1
+     </select>
+
+</mapper>

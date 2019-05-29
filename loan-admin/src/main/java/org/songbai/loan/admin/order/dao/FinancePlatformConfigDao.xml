@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.order.dao.FinancePlatformConfigDao">
+	<select id="selectPlatformList" resultType="org.songbai.loan.model.finance.FinancePlatformModel">
+		select * from loan_u_finance_platform where status = 1
+	</select>
+
+	<select id="selectPlatformConfigListByAgencyId"
+			resultType="org.songbai.loan.model.finance.PlatformConfig">
+		select a.*,b.name as expend,b.code from loan_u_finance_platform_config a LEFT JOIN loan_u_finance_platform b on a.platform_id = b.id
+		<where>
+			<if test="agencyId != null">
+				and a.agency_id = #{agencyId}
+			</if>
+			<if test="status != null">
+				and a.status = #{status}
+			</if>
+			<if test="platformCode != null">
+				and b.code = #{platformCode}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.news.dao.UserFeedbackDao">
+
+
+    <update id="updateUserFeedback" parameterType="int">
+		update
+			loan_u_user_feedback
+		set 
+			status=0
+		where
+			id=#{id}
+	</update>
+
+    <select id="queryUserFeedbackById" resultType="org.songbai.loan.model.news.UserFeedbackModel"
+            parameterType="int">
+		select 
+			*
+		from
+			loan_u_user_feedback
+		where 
+			id=#{id}
+	</select>
+
+    <select id="qureyList" resultType="org.songbai.loan.model.news.UserFeedbackVo">
+        select f.*
+        from loan_u_user_feedback f
+        <include refid="base_where" />
+        order by f.feedback_time DESC
+        limit #{po.limit}, #{po.pageSize}
+    </select>
+
+    <select id="qureyCount" resultType="java.lang.Integer">
+        select count(1)
+        from loan_u_user_feedback f
+        <include refid="base_where"/>
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="po.agencyId != null">
+                AND f.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.userName != null ">
+                and f.name like concat('%',#{po.userName},'%')
+            </if>
+            <if test="po.userPhone != null ">
+                and f.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startTime !=null">
+                AND <![CDATA[ f.feedback_time >=#{po.startTime}]]>
+            </if>
+            <if test="po.endTime !=null">
+                AND <![CDATA[ f.feedback_time <=#{po.endTime}]]>
+            </if>
+            <if test="po.vestId != null ">
+                and f.vest_id = #{po.vestId}
+            </if>
+        </where>
+    </sql>
+</mapper>

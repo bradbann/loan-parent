@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.UserStatisticDao">
+    <insert id="insertUserStatisticByAgencyIdAndRegisterDate">
+        insert into loan_s_user
+                (agency_id,vest_id, statistic_date,channel_code
+        <if test="isRegister==1">
+            ,register_count
+        </if>
+        <if test="isLogin==1">
+            ,login_count
+        </if>
+        <if test="isIdcard==1">
+            ,idcard_count
+        </if>
+        <if test="isPhone==1">
+            ,phone_count
+        </if>
+        <if test="isFace==1">
+            ,face_count
+        </if>
+        <if test="isInfo==1">
+            ,info_count
+        </if>
+        <if test="isAli==1">
+            ,ali_count
+        </if>
+        <if test="isBank==1">
+            ,bank_count
+        </if>
+        <if test="isNew==1">
+            ,new_count
+        </if>
+        <if test="isOld==1">
+            ,old_count
+        </if>
+        <if test="isOld==1 or isNew==1">
+            ,order_count
+        </if>
+        <if test="isPay==1">
+            ,pay_count
+        </if>
+        )values (#{agencyId},#{vestId},#{registerDate},#{channelCode}
+        <if test="isRegister==1">
+           ,1
+        </if>
+        <if test="isLogin==1">
+            ,1
+        </if>
+        <if test="isIdcard==1">
+            ,1
+        </if>
+        <if test="isPhone==1">
+            ,1
+        </if>
+        <if test="isFace==1">
+            ,1
+        </if>
+        <if test="isInfo==1">
+            ,1
+        </if>
+        <if test="isAli==1">
+            ,1
+        </if>
+        <if test="isBank==1">
+            ,1
+        </if>
+        <if test="isNew==1">
+            ,1
+        </if>
+        <if test="isOld==1">
+            ,1
+        </if>
+        <if test="isOld==1 or isNew==1">
+            ,1
+        </if>
+        <if test="isPay==1">
+            ,1
+        </if>
+          )
+    </insert>
+    <update id="updateUserStatisticByAgencyIdAndRegisterDate">
+        update loan_s_user
+        <set>
+            <if test="isUv == 1">
+                uv_count = uv_count+1,
+            </if>
+            <if test="isRegister==1">
+                register_count=register_count+1,
+            </if>
+            <if test="isLogin==1">
+                login_count=login_count+1,
+            </if>
+            <if test="isIdcard==1">
+                idcard_count=idcard_count+1,
+            </if>
+            <if test="isPhone==1">
+                phone_count=phone_count+1,
+            </if>
+            <if test="isFace==1">
+                face_count=face_count+1,
+            </if>
+            <if test="isInfo==1">
+                info_count=info_count+1,
+            </if>
+            <if test="isAli==1">
+                ali_count=ali_count+1,
+            </if>
+            <if test="isBank==1">
+                bank_count=bank_count+1,
+            </if>
+            <if test="isNew==1">
+                new_count=new_count+1,
+                order_count=order_count+1,
+            </if>
+            <if test="isOld==1">
+                old_count=old_count+1,
+                order_count=order_count+1,
+            </if>
+            <if test="isPay==1">
+                pay_count=pay_count+1,
+            </if>
+        </set>
+        where statistic_date = #{registerDate} and agency_id=#{agencyId} and vest_id=#{vestId}  and channel_code=#{channelCode}
+    </update>
+
+</mapper>

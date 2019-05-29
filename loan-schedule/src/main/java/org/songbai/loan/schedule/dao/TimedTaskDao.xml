@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.schedule.dao.TimedTaskDao">
+
+
+    <select id="getAllOpenTask" resultType="org.songbai.loan.model.config.TimedTaskModel">
+        select
+        id, type_id, task_type, type_name, time_period, time_trigger, is_open, parameters, remark, create_date
+        from dream_a_timed_task
+        where is_open = true
+    </select>
+
+    <select id="getById" resultType="org.songbai.loan.model.config.TimedTaskModel">
+        select
+        id, type_id, task_type, type_name, time_period, time_trigger, is_open, parameters, remark, create_date
+        from dream_a_timed_task
+        where id = #{id}
+        limit 1
+    </select>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminDeptDao">
+
+    <select id="selectUserCountById" resultType="java.lang.Integer">
+        select count(1) from dream_a_actor where dept_id = #{deptId}
+    </select>
+
+    <select id="findDeptPage" resultType="org.songbai.loan.admin.admin.model.vo.AdminDeptVO">
+
+        select d.*,
+        (select a.name from dream_a_actor a where id = d.`minister_id` limit 1 ) ministerName,
+        (select name from dream_a_department a where a.id = d.parent_id limit 1) parentDeptName
+        from dream_a_department d
+        where agency_id = #{agencyId} AND <![CDATA[  d.dept_level <> 0 ]]>
+        <if test="deptId != null ">
+            AND <![CDATA[  d.id <> #{deptId} ]]>
+        </if>
+        <if test="deptCode != null ">
+            AND d.dept_code like concat('%',#{deptCode},'%')
+        </if>
+        order by d.dept_level,d.id
+        limit #{limit},#{pageSize}
+    </select>
+
+    <select id="queryDefaultDeptList" resultType="org.songbai.loan.admin.admin.model.AdminDeptModel">
+        select * from dream_a_department where id in (1,2,3)
+    </select>
+
+    <select id="findDeptIdByParentId" resultType="java.lang.Integer">
+        select DISTINCT(t.id) from dream_a_department t where t.parent_id = #{deptId}
+    </select>
+
+    <select id="findDeptListByParentId" resultType="org.songbai.loan.admin.admin.model.AdminDeptModel">
+         select t.* from dream_a_department t where t.parent_id = #{deptId}
+         order by t.id desc
+    </select>
+    <select id="findDeptListByDeptCode" resultType="org.songbai.loan.admin.admin.model.AdminDeptModel">
+        select * from dream_a_department t
+        <where>
+            <if test="deptCode != null ">
+                AND t.dept_code like concat('%',#{deptCode},'%')
+            </if>
+            <if test="agencyId != null ">
+                And t.agency_id = #{agencyId}
+            </if>
+            <if test="deptType != null ">
+                AND t.dept_type = #{deptType}
+            </if>
+        </where>
+        order by t.dept_level,t.id
+    </select>
+    <select id="getDeptPageCount" resultType="java.lang.Integer">
+        select count(1) from dream_a_department
+        where dept_code like concat('%',#{deptCode},'%') and agency_id = #{agencyId}
+        <![CDATA[ AND dept_level <> 0 ]]>
+        <if test="deptId != null ">
+            AND <![CDATA[  id <> #{deptId} ]]>
+        </if>
+    </select>
+    <select id="getDeptByParentId" resultType="org.songbai.loan.admin.admin.model.AdminDeptModel">
+        select * from dream_a_department where parent_id = #{parentId}
+    </select>
+    <select id="findDeptRoleList" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select * from dream_a_authority where dept_id = #{deptId}
+        <if test="agencyId != null ">
+            and data_id = #{agencyId}
+        </if>
+        order by id
+    </select>
+</mapper>

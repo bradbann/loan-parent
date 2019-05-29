@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.version.dao.AppManagerDao">
+    <select id="findAppManagerByAgencyId" resultType="java.lang.Integer">
+        select count(1) from dream_v_app_manager where agency_id = #{agencyId} and platform = #{platform}
+    </select>
+    <select id="getInfoByAgencyId" resultType="org.songbai.loan.model.version.AppManagerModel">
+         select * from dream_v_app_manager where agency_id = #{agencyId} and platform = #{platform} and vest_id = #{vestId}
+    </select>
+    <select id="queryAppManager" resultType="org.songbai.loan.admin.version.model.vo.AppManagerVo">
+        select t.*,uav.name vestName,ua.agency_name from dream_v_app_manager t
+            left join dream_u_app_vest uav on t.vest_id = uav.id
+            left join dream_u_agency ua on t.agency_id = ua.id
+        <where>
+            <if test="model.agencyId != null ">
+                AND t.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.status != null ">
+                And t.status = #{model.status}
+            </if>
+        </where>
+        order by t.id desc
+    </select>
+</mapper>

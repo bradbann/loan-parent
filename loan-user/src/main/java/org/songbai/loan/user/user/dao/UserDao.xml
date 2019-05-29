@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.UserDao">
+    <update id="updateOtherUserGexing">
+        update loan_u_user set gexing=null
+        where gexing=#{gexing} and id !=#{id}
+    </update>
+    <select id="findBlackList" resultType="org.songbai.loan.model.user.UserModel">
+		select * from loan_u_user
+		<where>
+			status=0
+			<if test="phone != null ">
+				AND phone = #{phone}
+			</if>
+			<if test="agencyId != null ">
+				AND agency_id = #{agencyId}
+			</if>
+		</where>
+		limit 1
+	</select>
+</mapper>

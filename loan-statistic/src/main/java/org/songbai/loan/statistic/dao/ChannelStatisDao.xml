@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.ChannelStatisDao">
+    <update id="updateChannelStatis">
+        update loan_s_channel_statis
+        <set>
+            <if test="model.registerCount != null ">register_count = register_count + 1,</if>
+            <if test="model.loginCount != null ">login_count = login_count + 1,</if>
+            <if test="model.orderCount != null ">order_count = order_count + 1,</if>
+            <if test="model.transferCount != null ">transfer_count = transfer_count + 1,</if>
+        </set>
+        where id = #{model.id}
+    </update>
+
+    <select id="getInfoByChannelId" resultType="org.songbai.loan.model.statistic.ChannelStatisModel">
+        select * from loan_s_channel_statis
+        where agency_id = #{agencyId} and channel_id = #{channelId} and  calc_date = #{calcDate}
+    </select>
+</mapper>

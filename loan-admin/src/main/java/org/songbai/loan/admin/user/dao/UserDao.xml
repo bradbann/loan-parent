@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.user.dao.UserDao">
+    <sql id="where_sql">
+        <where>
+            u.deleted=0
+            <if test="model.agencyId != null">and u.agency_id = #{model.agencyId}</if>
+            <if test="model.channelId != null">and u.channel_id = #{model.channelId}</if>
+            <if test="model.name != null">and u.name like concat('%', #{model.name}, '%')</if>
+            <if test="model.phone != null">and u.phone like concat('%', #{model.phone}, '%')</if>
+            <if test="model.status != null">and u.status = #{model.status}</if>
+            <if test="model.agencyId != null">and u.agency_id = #{model.agencyId}</if>
+            <if test="model.createTimeStart != null">and u.create_time &gt;= #{model.createTimeStart}</if>
+            <if test="model.createTimeEnd != null">and u.create_time &lt;= #{model.createTimeEnd}</if>
+            <if test="model.updateTimeStart != null">and u.update_time &gt;= #{model.updateTimeStart}</if>
+            <if test="model.updateTimeEnd != null">and u.update_time &lt;= #{model.updateTimeEnd}</if>
+            <if test="model.vestId != null">and u.vest_id = #{model.vestId}</if>
+            <if test="model.channelCode != null">and u.channel_code = #{model.channelCode}</if>
+        </where>
+    </sql>
+    <update id="updateUserIdCardInfo">
+        update loan_u_user_info set name = #{userInfo.name},idcard_num = #{userInfo.idcardNum},validation = #{userInfo.validation},idcard_address = #{userInfo.idcardAddress} where user_id = #{userInfo.userId}
+    </update>
+
+    <select id="findUserList" resultType="org.songbai.loan.admin.user.model.UserResultVo">
+        SELECT u.third_id,u.name,u.phone,u.agency_id,u.status,u.create_time,DATEDIFF(a.remain_days,NOW()) as
+        remainDays,ui.idcard_num,
+        IFNULL(a.idcard_status,0) as idcardStatus,
+        IFNULL(a.face_status,0) as faceStatus,
+        IFNULL(a.info_status,0) as infoStatus,
+        IFNULL(a.phone_status,0) as phoneStatus,
+        IFNULL(a.alipay_status,0) as alipayStatus,
+        IFNULL(a.bank_status,0) as bankStatus,
+        u.vest_id,u.channel_code
+        FROM loan_u_user u left join loan_u_authentication a on u.id = a.user_id
+        left join loan_u_user_info ui on u.id = ui.user_id
+        <include refid="where_sql"/>
+        ORDER BY u.create_time DESC,u.id asc
+        limit #{model.limit},#{model.pageSize}
+    </select>
+
+    <select id="findUserCount" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM loan_u_user u left join loan_u_authentication a on u.id = a.user_id
+        left join loan_u_user_info ui on u.id = ui.user_id
+        <include refid="where_sql"/>
+    </select>
+
+    <select id="getUserIdByIdcardNum" resultType="java.lang.Integer">
+    	select user_id from loan_u_user_info where idcard_num = #{idcardNum}
+    </select>
+    <select id="findUserByUserThirdIdAndAgencyId" resultType="org.songbai.loan.model.user.UserModel">
+        select * from loan_u_user where third_id=#{thirdId} and agency_id=#{agencyId} limit 1
+    </select>
+
+</mapper>

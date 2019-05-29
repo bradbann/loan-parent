@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.agency.dao.AgencyDao">
+    <insert id="addAgency" parameterType="org.songbai.loan.model.agency.AgencyModel"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO dream_u_agency (agency_name,  agency_level, super_id, link_man, link_phone, description,agency_icon)
+        VALUES (#{model.agencyName}, #{model.agencyLevel},#{model.superId}, #{model.linkMan}, #{model.linkPhone}, #{model.description},#{model.agencyIcon})
+    </insert>
+    <insert id="createAdminDeptResource">
+        insert into dream_a_department_resource
+        ( resource_id, agency_id,type)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            ( #{item.resourceId}, #{item.agencyId},#{item.type})
+        </foreach>
+    </insert>
+    <delete id="deleteResourceByAgencyId">
+        delete from dream_a_department_resource where agency_id = #{agencyId} and type = 1
+    </delete>
+
+    <select id="pageAgency" parameterType="org.songbai.loan.model.agency.AgencyModel"
+            resultType="org.songbai.loan.model.agency.AgencyModel">
+        select agency.* ,actor.id as actorId,actor.disable,
+        (select count(id) from dream_u_user where agency_id = agency.id) as registerNum
+        from dream_u_agency agency left
+        join
+        dream_a_actor actor on actor.data_id = agency.id
+        where
+        actor.user_account = #{account} and agency.id != 0
+        <if test="agencyId != 0">
+            and super_id = #{agencyId}
+        </if>
+        <if test="id !=null">
+            and agency.id = #{id}
+        </if>
+        <if test="agencyName !=null">
+            and agency.agency_name like concat('%',#{agencyName},'%')
+        </if>
+        <if test="linkPhone !=null">
+            and agency.link_phone like concat('%',#{linkPhone},'%')
+        </if>
+        <if test="disable !=null">
+            and actor.disable = #{disable}
+        </if>
+        <if test="relationCode !=null">
+            and relation_code like concat('%',#{relationCode},'%')
+        </if>
+
+        order by agency.status desc ,agency.id desc limit #{limit} ,#{size}
+    </select>
+
+
+    <select id="pageAgency_count" resultType="java.lang.Integer">
+        select count(agency.id) from dream_u_agency agency left
+        join
+        (select * from dream_a_actor where user_account = 'admin') actor on actor.data_id = agency.id
+        <where>
+            agency.id != 0
+            <if test="agencyId != 0">
+                and agency.super_id = #{agencyId}
+            </if>
+            <if test="id !=null">
+                and agency.id = #{id}
+            </if>
+            <if test="agencyName !=null">
+                and agency.agency_name like concat('%',#{agencyName},'%')
+            </if>
+            <if test="linkPhone !=null">
+                and agency.link_phone like concat('%',#{linkPhone},'%')
+            </if>
+            <if test="relationCode !=null">
+                and agency.relation_code like concat('%',#{relationCode},'%')
+            </if>
+            <if test="disable !=null">
+                and actor.disable = #{disable}
+            </if>
+
+        </where>
+    </select>
+
+    <update id="updateAgency" parameterType="org.songbai.loan.model.agency.AgencyModel">
+        update dream_u_agency
+        <set>
+            <if test="agencyName!=null">
+                agency_name =#{agencyName},
+            </if>
+            <if test="agencyCode !=null">
+                agency_code = #{agencyCode},
+            </if>
+            <if test="linkMan !=null">
+                link_man = #{linkMan},
+            </if>
+            <if test="linkPhone !=null">
+                link_phone = #{linkPhone},
+            </if>
+            <if test="description !=null">
+                description =#{description},
+            </if>
+            <if test="status !=null">
+                status =#{status},
+            </if>
+            <if test="relationCode !=null">
+                relation_code = #{relationCode},
+            </if>
+
+            <if test="idMd5 !=null">
+                id_md5 = #{idMd5},
+            </if>
+            <if test="agencyIcon != null and agencyIcon != ''">
+                agency_icon = #{agencyIcon},
+            </if>
+
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="findAgencyCount" parameterType="org.songbai.loan.model.agency.AgencyModel"
+            resultType="java.lang.Integer">
+        select count(id) from dream_u_agency
+        <where>
+            <if test="agencyName!=null">
+                and agency_name =#{agencyName}
+            </if>
+            <if test="agencyCode !=null">
+                and agency_code = #{agencyCode}
+            </if>
+            <if test="identification !=null">
+                and identification = #{identification}
+            </if>
+            <if test="id !=null">
+                and id !=#{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT a.*,group_concat( host.host) agencyUrl
+        FROM dream_u_agency a left join dream_u_agency_host host on a.id = host.agency_id
+        WHERE a.id = #{id}
+        LIMIT 1
+    </select>
+
+    <select id="findSubAgency" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT *
+        FROM
+            dream_u_agency
+        WHERE super_id = #{id}
+    </select>
+
+    <select id="findSecAgency" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT *
+        FROM
+            dream_u_agency
+        WHERE super_id = #{id} AND status = 1
+    </select>
+
+    <select id="findHigherAgency" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT *
+        FROM
+            dream_u_agency agency1 LEFT JOIN dream_u_agency agency2 ON
+                                                                        agency1.id = agency2.super_id
+        WHERE agency2.id = #{id}
+    </select>
+    <select id="findLowAgencyBySuperAgencyId" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT * FROM
+        dream_u_agency
+        <where>
+            <if test="superId != null">
+                and super_id = #{superId}
+            </if>
+            <if test="relationCode != null">
+                and relation_code like concat(#{relationCode}, '%','#')
+            </if>
+        </where>
+    </select>
+
+    <select id="findAllAgencyByStatus" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT *
+        FROM
+            dream_u_agency
+        WHERE status = #{status}
+    </select>
+
+    <update id="disabledAgencyAccount" parameterType="java.lang.Integer">
+        update dream_a_actor
+        set disable=#{disable} where data_id in
+        (select id from dream_u_agency where id in
+        <foreach collection="ids" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        <if test="superId != null">
+            and super_id = #{superId}
+        </if>
+        )
+    </update>
+
+    <update id="disabledSubAgencyAccount" parameterType="java.lang.Integer">
+        update dream_a_actor
+        set disable=#{status} where id =#{id}
+    </update>
+
+
+    <select id="queryAllSubAgency" resultType="java.lang.Integer">
+        SELECT id
+        FROM dream_u_agency
+        WHERE relation_code LIKE concat('%', #{relationCode}, '%') AND relation_code != #{relationCode}
+    </select>
+    <select id="findAgencyList" resultType="org.songbai.loan.admin.agency.vo.AgencySearchVO">
+        SELECT id as id,agency_name as name,agency_icon as portrait FROM dream_u_agency
+        <where>
+            <if test="relationCode != null">
+                AND relation_code like CONCAT(#{relationCode},'%' )
+            </if>
+            <if test="username != null">
+                AND user_name like CONCAT('%',#{username},'%' )
+            </if>
+        </where>
+    </select>
+    <select id="findUserId" resultType="java.lang.Integer">
+        SELECT id FROM ex_user
+        <where>
+            <if test="promoterId != null">
+                and promoter_id = #{promoterId}
+            </if>
+            <if test="agencyId != null">
+                and agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+
+    <select id="findAgencyLikeParam" resultType="java.lang.Integer">
+        select id from dream_u_agency
+        <where>
+            <if test="agencyName != null">
+                AND agency_name like CONCAT('%',#{agencyName},'%' )
+            </if>
+            <if test="linkMan != null">
+                AND link_man like CONCAT('%',#{linkMan},'%' )
+            </if>
+            <if test="linkPhone != null">
+                AND link_phone like CONCAT('%',#{linkPhone},'%' )
+            </if>
+        </where>
+    </select>
+
+
+    <select id="agencyList" resultType="org.songbai.loan.model.agency.AgencyModel">
+        select a.*,group_concat( host.host) agencyUrl
+        from dream_u_agency a left join dream_u_agency_host host on a.id = host.agency_id
+        <include refid="base_where"/>
+        GROUP BY a.id
+        order by a.create_time DESC
+        limit #{offset}, #{pageSize}
+    </select>
+    <select id="agencyListCount" resultType="java.lang.Integer">
+        select count(a.id ) from dream_u_agency a
+        <include refid="base_where"/>
+    </select>
+    <select id="subAgencyList" resultType="org.songbai.loan.model.agency.AgencyModel">
+        select *
+        from dream_u_agency
+        <include refid="sub_base_where"/>
+        order by create_time DESC
+        limit #{offset}, #{pageSize}
+    </select>
+    <select id="subAgencyListCount" resultType="java.lang.Integer">
+        select count(id)
+        from dream_u_agency
+        <include refid="sub_base_where"/>
+
+    </select>
+    <!--修改这个sql，附带也要修改agencyFlowMapList 同步处理-->
+
+    <select id="selectBindUser" resultType="org.songbai.loan.model.agency.AgencyModel">
+        SELECT * from dream_u_agency where user_id=#{userId} limit 1
+    </select>
+
+    <sql id="sub_base_where">
+        <where>
+            super_id =#{superAgencyId}
+
+            <if test="agencyName != null">
+                AND agency_name like CONCAT('%',#{agencyName},'%' )
+            </if>
+            <if test="agencyCode != null">
+                AND agency_code like CONCAT('%',#{agencyCode},'%' )
+            </if>
+            <if test="linkMan != null">
+                AND link_man like CONCAT('%',#{linkMan},'%' )
+            </if>
+            <if test="linkPhone != null">
+                AND link_phone like CONCAT('%',#{linkPhone},'%' )
+            </if>
+            <if test="agencyId != null">
+                AND id=#{agencyId}
+            </if>
+            <if test="status != null">
+                AND status=#{status}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <![CDATA[ a.id <>0 ]]>
+            <if test="po.agencyName != null">
+                AND a.agency_name like CONCAT('%',#{po.agencyName},'%' )
+            </if>
+            <if test="po.agencyId != null">
+                AND a.id=#{po.agencyId}
+            </if>
+
+            <if test="po.linkMan != null">
+                AND a.link_man like CONCAT('%',#{po.linkMan},'%' )
+            </if>
+            <if test="po.linkPhone != null">
+                AND a.link_phone like CONCAT('%',#{po.linkPhone},'%' )
+            </if>
+            <if test="po.status != null">
+                AND a.status=#{po.status}
+            </if>
+        </where>
+    </sql>
+    <update id="updateShareStatus" parameterType="java.lang.Integer">
+        update dream_u_agency
+        set share_status=#{shareStatus} where id in
+        <foreach collection="ids" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="updateUserInfoType">
+        update ex_user_info set user_type=#{value} where user_id=#{userId}
+    </update>
+
+    <select id="findAgencyAccount" resultType="org.songbai.loan.model.user.UserModel">
+        select u.user_phone as userPhone ,u.user_email as userEmail
+        from dream_u_agency a
+        left JOIN ex_user u on a.user_id=u.id
+        where a.id=#{agencyId} and u.status =0
+    </select>
+    <select id="selectAllByAgencyId" resultType="org.songbai.loan.model.agency.AgencyModel">
+        select id,agency_name from dream_u_agency
+        <where>
+            id != 0
+            <if test="id != null">
+                and id=#{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="countDomainNoCurrentUser" resultType="java.lang.Integer">
+        select count(1) from dream_u_agency_host
+        <where>
+            `host` in
+            <foreach collection="hosts" item="host" index="index" open="("
+                     separator="," close=")">
+                #{host}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="selectEnableAutoPayAgency" resultType="java.lang.Integer">
+        select * from dream_u_agency where auto_pay = 1
+    </select>
+</mapper>

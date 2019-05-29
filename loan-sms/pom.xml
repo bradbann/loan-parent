@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.songbai.loan</groupId>
+    <artifactId>loan-sms</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.songbai.cloud</groupId>
+        <artifactId>cloud-parent</artifactId>
+        <version>1.0.3</version>
+    </parent>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.songbai.loan</groupId>
+            <artifactId>loan-service</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gexin.platform</groupId>
+            <artifactId>gexin-rp-sdk-http</artifactId>
+            <version>4.1.0.0</version>
+        </dependency>
+        <!-- alibaba短信平台 -->
+        <!--<dependency>-->
+            <!--<groupId>com.alibaba</groupId>-->
+            <!--<artifactId>sms</artifactId>-->
+            <!--<version>0.0.1</version>-->
+        <!--</dependency>-->
+        <!-- TLSG短信平台 -->
+        <dependency>
+            <groupId>com.telesign</groupId>
+            <artifactId>telesign</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!--语音验证码-->
+        <dependency>
+            <groupId>jersey-bundle</groupId>
+            <artifactId>jersey-bundle</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <!--智呼-->
+        <dependency>
+            <groupId>com.third</groupId>
+            <artifactId>senseinfo-external-sdk</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>getui-nexus</id>
+            <url>http://mvn.gt.igexin.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <name>Team Nexus Repository</name>
+            <url>http://dev.esongbai.xyz/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+
+
+</project>

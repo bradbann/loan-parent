@@ -1,0 +1,37 @@
+server:
+  port: 3007
+  context-path: /schedule
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    metadata-map:
+      management:
+        port: 4007
+        context-path: /management
+  client:
+    serviceUrl:
+      defaultZone: http://admin:Songbai2017@conf.loan.abc:3100/eureka/
+
+spring:
+  application:
+    name: loan-schedule
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+
+#spring.cloud.inetutils.ignored-interfaces[0]=eth0
+logging:
+  path: /stock/loan.logs/${spring.application.name}
+
+endpoints:
+  sensitive: false
+  enabled: true
+management:
+  port: 4007
+  context-path: /management
+
+

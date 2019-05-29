@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.risk.dao.RiskMouldDao">
+    <sql id="where_sql">
+        <where>
+            <if test="model.status != null"> AND status = #{model.status}</if>
+        </where>
+    </sql>
+    <insert id="addRiskMould" parameterType="org.songbai.loan.admin.risk.model.RiskMouldVo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO risk_mould(name,status,default_sore,score_type) VALUES (#{name},#{status},#{defaultSore},#{scoreType})
+    </insert>
+    <insert id="addRiskModelWeight" parameterType="org.songbai.loan.risk.model.mould.RiskMouldWeightModel">
+        INSERT INTO risk_mould_weight (mould_id,name,catalog) VALUES (#{mouldId},#{name},#{catalog})
+    </insert>
+    <insert id="addVariable" parameterType="org.songbai.loan.risk.model.mould.RiskMouldVariableModel">
+        INSERT INTO risk_mould_variable
+          (mould_id,catalog,variable_code,variable_name,calc_symbol,calc_left,calc_right,oper_type,oper_score,
+          risk_level,status,remark,indexed  )
+        VALUES (#{mouldId},#{catalog},#{variableCode},#{variableName},#{calcSymbol},#{calcLeft},#{calcRight},#{operType},#{operScore},
+        #{riskLevel},#{status},#{remark},#{indexed}  )
+    </insert>
+    <update id="updateRiskMould" parameterType="org.songbai.loan.admin.risk.model.RiskMouldVo">
+        UPDATE risk_mould
+        <set>
+            <if test="name != null"> name = #{name},</if>
+            <if test="status != null"> status = #{status}</if>
+            <if test="defaultSore != null"> default_sore = #{defaultSore}</if>
+            <if test="scoreType != null"> score_type = #{scoreType}</if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateRiskRule" parameterType="org.songbai.loan.risk.model.mould.RiskMouldModel">
+        UPDATE risk_mould
+        <set>
+            <if test="riskMaxScore != null">risk_max_score = #{riskMaxScore}, </if>
+            <if test="lowerRiskScore != null">lower_risk_score = #{lowerRiskScore}, </if>
+            <if test="middleRiskScore != null">middle_risk_score = #{middleRiskScore}, </if>
+            <if test="highRiskScore != null">high_risk_score = #{highRiskScore}, </if>
+            <if test="adoptScore != null">adopt_score = #{adoptScore}, </if>
+            <if test="rejectScore != null">reject_score = #{rejectScore}, </if>
+            <if test="femaleWeight != null">female_weight = #{femaleWeight}, </if>
+            <if test="maleWeight != null">male_weight = #{maleWeight}</if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateRiskWeight" parameterType="org.songbai.loan.risk.model.mould.RiskMouldWeightModel">
+        UPDATE risk_mould_weight
+        <set>
+            <if test="highScore != null"> high_score = #{highScore},</if>
+            <if test="lowerScore != null"> lower_score = #{lowerScore},</if>
+            <if test="catalogCount != null">catalog_count = #{catalogCount},</if>
+            <if test="weight != null">weight = #{weight},</if>
+            <if test="adoptScore != null">adopt_score = #{adoptScore},</if>
+            <if test="rejectScore != null">reject_score = #{rejectScore}</if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateVariable" parameterType="org.songbai.loan.risk.model.mould.RiskMouldVariableModel">
+        UPDATE risk_mould_variable
+        <set>
+            <if test="calcSymbol != null">calc_symbol=#{calcSymbol},</if>
+            calc_left = #{calcLeft},
+            calc_right = #{calcRight},
+            <if test="operType != null"> oper_type = #{operType},</if>
+            <if test="operScore != null"> oper_score = #{operScore},</if>
+            <if test="riskLevel != null"> risk_level = #{riskLevel},</if>
+            <if test="status != null"> status = #{status},</if>
+            remark = #{remark}
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="delVariable">
+        DELETE  FROM  risk_mould_variable WHERE id=#{id}
+    </delete>
+    <delete id="deleteVariableModelByCatalogAndCode">
+        delete from risk_mould_variable
+         where mould_id = #{mouldId} and catalog = #{catalog}  and variable_code = #{variableCode}
+    </delete>
+    <select id="findList" resultType="org.songbai.loan.admin.risk.model.RiskMouldVo">
+        SELECT * FROM risk_mould
+        <include refid="where_sql"/>
+        limit #{page},#{pageSize}
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(id) FROM risk_mould
+        <include refid="where_sql"/>
+    </select>
+    <select id="queryCountWeight" resultType="java.lang.Integer">
+        SELECT count(id) FROM risk_mould_weight WHERE mould_id=#{mouldId} and catalog=#{catalog}
+    </select>
+    <select id="selectRiskMouldWeightByMouldId" resultType="org.songbai.loan.risk.model.mould.RiskMouldWeightModel">
+        SELECT * from risk_mould_weight WHERE mould_id = #{mouldId} order by catalog asc
+    </select>
+    <select id="selectMouldVariableByMouldId" resultType="org.songbai.loan.risk.model.mould.RiskMouldVariableModel" >
+        SELECT * FROM risk_mould_variable WHERE mould_id = #{mouldId} ORDER BY catalog,indexed, id
+    </select>
+    <select id="variableCount" resultType="java.lang.Integer">
+        SELECT count(id) FROM risk_mould_variable WHERE catalog = #{catalog} and variable_code = #{variableCode}
+    </select>
+    <select id="variableDrop" resultType="org.songbai.loan.risk.model.mould.RiskVariableModel">
+        SELECT name, catalog FROM risk_variable WHERE status = 1 GROUP BY catalog
+    </select>
+    <select id="riskTagDrop" resultType="org.songbai.loan.risk.model.mould.RiskVariableModel">
+        SELECT code,catalog,name,remark FROM risk_variable WHERE status = 1 and catalog = #{catalog} ORDER BY catalog
+    </select>
+    <select id="getRiskById" resultType="org.songbai.loan.risk.model.mould.RiskMouldModel">
+        SELECT * FROM risk_mould WHERE id = #{id}
+    </select>
+
+    <select id="selectVariableModelMaxScore" resultType="java.util.HashMap">
+        select sum(t.maxScore) maxScore,sum(t.minScore) minScore,count(1) size
+        from (
+             select variable_code, max(oper_score) maxScore,min(oper_score) minScore
+               from risk_mould_variable
+              where catalog = #{catalog} and mould_id = #{mouldId}
+              group by variable_code
+        ) t
+
+    </select>
+
+    <select id="selectVariableListForMaxMinScore" resultType="java.util.HashMap">
+        select variable_code variableCode, max(oper_score) maxScore,min(oper_score) minScore
+        from risk_mould_variable
+        where catalog = #{catalog} and mould_id = #{mouldId}
+        group by variable_code
+    </select>
+
+
+    <select id="selectVariableModelByCatalogAndCode"
+            resultType="org.songbai.loan.risk.model.mould.RiskMouldVariableModel">
+        select * from risk_mould_variable
+        where mould_id = #{mouldId} and catalog = #{catalog}  and variable_code = #{variableCode}
+    </select>
+
+    <select id="selectVariableModelMaxIndexdByCatalogAndCode" resultType="java.lang.Integer" >
+        select max(indexed) from risk_mould_variable where mould_id = #{mouldId} and catalog = #{catalog}
+    </select>
+</mapper>

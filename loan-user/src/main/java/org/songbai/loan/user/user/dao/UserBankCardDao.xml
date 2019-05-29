@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.UserBankCardDao">
+	<update id="updateBankCardModelById">
+		update loan_u_user_bankcard
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="icon != null">icon=#{icon},</if>
+			<if test="bankName != null">bank_name=#{bankName},</if>
+			<if test="bankCode != null">bank_code=#{bankCode},</if>
+			<if test="bankCardNum != null">bank_card_num=#{bankCardNum},</if>
+			<if test="bankPhone != null">bank_phone=#{bankPhone},</if>
+			<if test="status != null">status=#{status},</if>
+			<if test="bindPlatform != null">bind_platform=#{bindPlatform},</if>
+		</set>
+		, request_id = null
+		where id=#{id}
+	</update>
+
+	<select id="selectUserBankListByUserIdStatus" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where user_id = #{userId} and deleted = 0
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		order by id desc
+	</select>
+
+	<select id="getBankCardByCardNum" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where bank_card_num = #{bankCardNum} and deleted = 0
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="agencyId != null">
+			and agency_id = #{agencyId}
+		</if>
+		order by id desc limit 1
+	</select>
+	<select id="getUserBindCard" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where user_id = #{userId} and type = #{type} and deleted = 0 and status = #{status} limit 1
+	</select>
+	<select id="selectUserBindList" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where user_id = #{userId} and status = #{status} and deleted = 0 order by type desc
+	</select>
+	<select id="selectAllList" resultType="org.songbai.loan.user.user.model.vo.UserBankCardVo">
+		select * from loan_u_user_bankcard where user_id = #{userId} and status = #{status} order by type desc
+	</select>
+	<select id="getIconByBankCode" resultType="java.lang.String">
+		select distinct icon from loan_u_finance_bank where bank_code = #{bankCode}
+	</select>
+	<select id="getBankModelByPlatformIdAndBankCode" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_finance_bank where bank_code = #{bankCode} and pay_platform_id = #{platformId}
+	</select>
+
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.version.dao.AppVersionDao">
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT count(a.id) FROM dream_v_version a
+            left join dream_u_app_vest b on a.vest_id = b.id
+            left join loan_a_agency_channel c on a.channel_code = c.channel_code
+        <where>
+            and a.agency_id = c.agency_id
+            <if test="model.platform != null">
+                and a.platform = #{model.platform}
+            </if>
+            <if test="model.forceUpdateAllPreVersions != null">
+                and a.force_update_all_pre_versions = #{model.forceUpdateAllPreVersions}
+            </if>
+            <if test="model.updateAllPreVersions != null">
+                and a.update_all_pre_versions = #{model.updateAllPreVersions}
+            </if>
+            <if test="model.channelCode != null">
+                and a.channel_code = #{model.channelCode}
+            </if>
+            <if test="model.agencyId != null ">
+                AND a.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.vestId != null">
+                and a.vest_id = #{model.vestId}
+            </if>
+        </where>
+    </select>
+
+    <select id="findVersionByAgencyId" resultType="java.lang.Integer">
+        SELECT count(*) FROM dream_v_version WHERE platform=#{platform} and vest_id = #{vestId}
+        <if test="agencyId != null ">
+            AND agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="findInfoByAgencyIdAndPlatform" resultType="org.songbai.loan.model.version.AppVersionModel">
+        select *  FROM dream_v_version WHERE platform=#{platform} and vest_id = #{vestId}
+        <if test="agencyId != null ">
+            AND agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="findVersionPage" resultType="org.songbai.loan.admin.version.model.vo.AppVersionVO">
+        SELECT t1.*, t2.agency_name, t2.link_phone as phone,t3.name as vestName,t4.channel_name FROM dream_v_version t1
+        LEFT JOIN dream_u_agency t2 ON t1.agency_id=t2.id
+        left join dream_u_app_vest t3 on t1.vest_id = t3.id
+        left join loan_a_agency_channel t4 on t1.channel_code = t4.channel_code
+        <where>
+            and t1.agency_id = t4.agency_id
+            <if test="model.platform != null">
+                and t1.platform = #{model.platform}
+            </if>
+            <if test="model.agencyName != null">
+                and t2.agency_name like concat('%', #{model.agencyName}, '%')
+            </if>
+            <if test="model.forceUpdateAllPreVersions != null">
+                and t1.force_update_all_pre_versions = #{model.forceUpdateAllPreVersions}
+            </if>
+            <if test="model.updateAllPreVersions != null">
+                and t1.update_all_pre_versions = #{model.updateAllPreVersions}
+            </if>
+            <if test="model.agencyId != null ">
+                And t1.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.vestId != null">
+                and t1.vest_id = #{model.vestId}
+            </if>
+            <if test="model.channelCode != null">
+                and t1.channel_code = #{model.channelCode}
+            </if>
+        </where>
+        order by t1.id desc
+        limit #{limit},#{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.service.user.dao.ComUserDao">
+
+    <select id="selectUserModelById" resultType="org.songbai.loan.model.user.UserModel">
+        SELECT *
+        FROM loan_u_user
+        WHERE
+            id = #{userId} and deleted=0
+        LIMIT 1
+    </select>
+
+    <select id="selectUserModelByThridId" resultType="org.songbai.loan.model.user.UserModel">
+      SELECT * FROM loan_u_user WHERE  third_id = #{thirdId} and deleted =0  LIMIT 1
+    </select>
+
+
+    <select id="selectUserIdByLikeUserName" resultType="java.lang.Integer">
+        SELECT id from loan_u_user
+        <where>
+            and deleted =0
+            <if test="username != null">
+                user_name like CONCAT("%", #{username},"%")
+            </if>
+        </where>
+    </select>
+    <select id="selectUserIdByAgencyIdOrPromoterId" resultType="java.lang.Integer">
+        select id from loan_u_user
+        <where>
+            and deleted =0
+            <if test="agencyType==1">
+                agency_id=#{id}
+            </if>
+            <if test="agencyType==2">
+                promoter_id=#{id}
+            </if>
+        </where>
+    </select>
+    <select id="getUserTypeByUserId" resultType="java.lang.Integer">
+        select user_type from loan_u_user_info t where t.user_id = #{userId}
+    </select>
+    <select id="getPromoterByUserId" resultType="java.lang.Integer">
+		select level_id from  dream_u_agency_promoter
+        where  user_id=#{userId}
+    </select>
+    <select id="getAgencyByUserId" resultType="java.lang.Integer">
+       select api_permission from dream_u_agency where id=#{agencyId}
+    </select>
+    <select id="getPromoterLevelAPiById" resultType="java.lang.Integer">
+        select api_permission from dream_u_agency_promoter_level where id=#{id}
+    </select>
+
+    <select id="findUserInfo" resultType="org.songbai.loan.model.user.UserModel">
+        select * from loan_u_user t
+        <where>
+            and deleted =0
+            <if test="user.userPhone != null ">
+                AND t.user_phone = #{user.userPhone}
+            </if>
+            <if test="user.userEmail != null ">
+                AND t.user_email = #{user.userEmail}
+            </if>
+            <if test="user.status != null ">
+                AND t.status = #{user.status}
+            </if>
+        </where>
+        limit 1
+    </select>
+    <select id="findUserModelByAgencyIdAndPhone" resultType="org.songbai.loan.model.user.UserModel">
+        select * from loan_u_user
+        <where>
+            and deleted =0
+            <if test="phone != null ">
+                AND phone = #{phone}
+            </if>
+            <if test="agencyId != null ">
+                AND agency_id = #{agencyId}
+            </if>
+            <if test="vestId!= null ">
+                AND vest_id = #{vestId}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <select id="findUserInfoByUserId" resultType="org.songbai.loan.model.user.UserInfoModel">
+        SELECT *
+        FROM loan_u_user_info
+        WHERE
+            user_id = #{userId} and deleted = 0
+        LIMIT 1
+    </select>
+    <select id="findUserListByUserPhone" resultType="org.songbai.loan.model.user.UserModel">
+        select * from loan_u_user where phone = #{phone}
+        <if test="agencyId != null ">
+            and agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="findChannelCodeList" resultType="java.lang.String">
+        select DISTINCT(t.channel_code) channelCode from loan_u_user t where t.channel_code is not null
+        <if test="agencyId != null ">and t.agency_id = #{agencyId}</if>
+        <if test="vestId != null "> and t.vest_id = #{vestId}</if>
+    </select>
+    <select id="findChannelNameByChannelCode" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel where channel_code=#{channelCode} limit 1
+    </select>
+</mapper>

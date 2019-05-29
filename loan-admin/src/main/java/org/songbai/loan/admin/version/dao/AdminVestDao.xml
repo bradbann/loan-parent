@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.version.dao.AdminVestDao">
+
+    <delete id="deleteByIds">
+        delete from dream_u_app_vest
+        WHERE id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="findByPage" resultType="org.songbai.loan.admin.version.model.vo.AppVestVO">
+        SELECT t.*,g.name as  groupName,p.name as pushSender,p.id as pushSenderId
+        FROM dream_u_app_vest t
+        left join loan_u_product_group g on t.group_id=g.id
+        left join dream_m_push_sender p on t.push_sender_id=p.id
+        <where>
+            <if test="model.agencyId != null ">
+                And t.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.status != null ">
+                and t.status = #{model.status}
+            </if>
+            <if test="model.id != null ">
+                and t.id = #{model.id}
+            </if>
+        </where>
+        order by t.id desc
+        limit #{offset}, #{pageSize}
+
+    </select>
+    <select id="queryRows" resultType="java.lang.Integer">
+        SELECT count(1) from dream_u_app_vest t
+        left join loan_u_product_group g on t.group_id=g.id
+       <where>
+            <if test="model.agencyId != null ">
+                And t.agency_id = #{model.agencyId}
+            </if>
+            <if test="model.status != null ">
+                and t.status = #{model.status}
+            </if>
+            <if test="model.id != null ">
+                and t.id = #{model.id}
+            </if>
+        </where>
+    </select>
+    <select id="findVestByVestCode" resultType="org.songbai.loan.model.version.AppVestModel">
+        select * from dream_u_app_vest t where t.vest_code = #{vestCode} and t.agency_id = #{agencyId}
+    </select>
+    <select id="findVestList" resultType="org.songbai.loan.model.version.AppVestModel">
+         select * from dream_u_app_vest t
+         <where>
+             <if test="model.agencyId != null ">
+                 and t.agency_id =#{model.agencyId}
+             </if>
+             <if test="model.status != null ">
+                 and t.status = #{model.status}
+             </if>
+             <if test="model.vestCode != null ">
+                 and t.vest_code = #{model.vestCode}
+             </if>
+         </where>
+        order by t.id asc
+    </select>
+    <select id="findVestStartPush" resultType="java.lang.Integer">
+        select count(1) from dream_u_app_vest where status=1 and push_sender_id=#{pushSenderId}
+    </select>
+</mapper>

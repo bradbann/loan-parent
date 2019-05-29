@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.AgencyChannelDao">
+    <insert id="insertStatisList">
+        insert into loan_s_channel_statis
+        (agency_id,channel_id,register_count,login_count,order_count,order_rate,transfer_count,transfer_rate,calc_date)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.agencyId}, #{item.channelId}, #{item.registerCount}, #{item.loginCount}, #{item.orderCount},
+            #{item.orderRate}, #{item.transferCount}, #{item.transferRate}, #{item.calcDate})
+        </foreach>
+    </insert>
+    <select id="fingChannleList" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel where channel_status = 1
+    </select>
+    <select id="findUserCountGroup" resultType="java.util.Map">
+        select t.agency_id,t.channel_id channelId,count(1) registerCount,
+        sum(if(t.last_login_time is not null,1,0)) loginCount
+        from loan_u_user t
+        <where>
+            <if test="createTime != null ">
+                AND DATE_FORMAT(t.create_time, '%Y-%m-%d') = #{createTime}
+            </if>
+        </where>
+        group by t.agency_id,t.channel_id
+    </select>
+    <select id="findOrderCountGroup" resultType="java.util.Map">
+        select count(1) orderCount,
+        sum(if(t.transfer_time is not null ,1,0 )) transferCount,
+        t.agency_id,uu.channel_id channelId
+        from loan_u_order t,loan_u_user uu
+        where t.user_id = uu.id
+        <if test="createTime != null ">
+            AND DATE_FORMAT(uu.create_time, '%Y-%m-%d') = #{createTime}
+        </if>
+        group by t.agency_id,uu.channel_id
+    </select>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminDeptResourceDao">
+    <insert id="createAdminDeptResource">
+        insert into dream_a_department_resource
+        (dept_id, resource_id, agency_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.deptId}, #{item.resourceId}, #{item.agencyId})
+        </foreach>
+    </insert>
+
+
+    <delete id="deleteResourceByDeptId">
+        delete
+        from dream_a_department_resource
+        where dept_id = #{deptId}
+    </delete>
+
+    <select id="getResourceAssignmentIdsByDeptId" resultType="java.lang.Integer">
+        select a.id from dream_a_department_resource a
+        <where>
+            <if test="agencyId != null">AND a.agency_id = #{agencyId}</if>
+            <if test="deptId != null">AND a.dept_id = #{deptId}</if>
+        </where>
+    </select>
+    <select id="getInfoByDeptIdAndId" resultType="org.songbai.loan.admin.admin.model.AdminDeptResourceModel">
+        select * from dream_a_department_resource where resource_id = #{resourceId}
+        <if test="type != null ">
+            And type = #{type}
+        </if>
+        <if test="deptId != null ">
+            AND dept_id =#{deptId}
+        </if>
+        <if test="agencyId != null ">
+            ANd agency_id = #{agencyId}
+        </if>
+    </select>
+    <select id="findResourceByParentId" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select sr.* from dream_a_department_resource adr,dream_a_security_resource sr
+        where adr.resource_id = sr.id
+        <if test="parentId != null ">
+            AND sr.parent_id = #{parentId}
+        </if>
+        <if test="agencyId != null ">
+            AND adr.agency_id = #{agencyId}
+        </if>
+        <if test="deptId != null ">
+            AND adr.dept_id = #{deptId}
+        </if>
+        <if test="type != null ">
+            And adr.type = #{type}
+        </if>
+        <if test="category != null ">
+            and sr.category = #{category}
+        </if>
+        and sr.status = 1
+    </select>
+
+
+</mapper>

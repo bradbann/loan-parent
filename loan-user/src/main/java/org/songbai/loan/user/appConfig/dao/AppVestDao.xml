@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.appConfig.dao.AppVestDao">
+
+    <select id="findByVersionAndPlatform" parameterType="org.songbai.loan.user.appConfig.model.vo.AppVestVo"
+            resultType="org.songbai.loan.model.version.AppVestModel">
+        select id,identify,version,platform,vest,create_time from dream_u_app_vest
+        where identify=#{vo.identify} and platform=#{vo.platform} and version=#{vo.version}
+    </select>
+</mapper>

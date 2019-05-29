@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminSecurityResourceDao">
+
+    <!-- 公共的删除 -->
+    <delete id="delete">
+		delete from
+		dream_a_security_resource
+		where id = #{0}
+	</delete>
+
+
+    <select id="getAllByMenuId" resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+        select * from
+        dream_a_security_resource
+        where status = 1
+        <if test="menuId != null">and parent_id = #{menuId}</if>
+        <if test="category != null">and category = #{category}</if>
+        <if test="type != null">and type = #{type}</if>
+    </select>
+
+    <select id="getAllByMenuIdByActorId" resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+        select DISTINCT s.id, s.* from
+        dream_a_authorization da,
+        dream_a_security_resource_assignmen ds,
+        dream_a_security_resource s
+        where s.status = 1 and da.actor_id=#{actorId}
+        and da.authority_id = ds.authority_id
+        and ds.security_resource_id = s.id
+        <if test="menuId != null">and s.parent_id = #{menuId}</if>
+        <if test="category != null">and s.category = #{category}</if>
+        <if test="type != null">and s.type = #{type}</if>
+    </select>
+
+
+    <update id="updateStatus" parameterType="integer">
+		update
+		dream_a_security_resource
+		set status = 0
+		where id = #{id}
+	</update>
+
+
+    <!-- *********************菜单资源权限 -->
+    <insert id="createMenu" parameterType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel"
+            useGeneratedKeys="true" keyProperty="id">
+		insert into
+		dream_a_security_resource
+		(name, description, category, menu_icon,
+		level, position, url,parent_id,is_leaf,type,code)
+		values
+		(#{name, jdbcType=VARCHAR},
+		#{description, jdbcType=VARCHAR},
+		#{category, jdbcType=VARCHAR},
+		#{menuIcon, jdbcType=VARCHAR},
+		#{level,jdbcType=INTEGER},
+		#{position,jdbcType=INTEGER},
+		#{url,jdbcType=VARCHAR},
+		#{parentId,jdbcType=INTEGER},
+		#{isLeaf,jdbcType=TINYINT},
+		#{type,jdbcType=INTEGER},#{code,jdbcType=VARCHAR})
+	</insert>
+
+    <update id="updateMenu" parameterType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        update dream_a_security_resource
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="position != null">position = #{position},</if>
+            <if test="url != null">url = #{url},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="menuIcon != null">menu_icon = #{menuIcon},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="getMenu" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select id, name, description,
+        category, menu_icon, level, position,
+        url,parent_id,is_leaf,is_admin
+        from
+        dream_a_security_resource
+        <where>
+            <if test="id !=null">AND id =#{id}</if>
+            <if test="status !=null">AND status =#{status}</if>
+            <if test="category !=null">AND category =#{category}</if>
+        </where>
+    </select>
+
+    <select id="getChildMenu" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id, s.name,
+        s.description, s.category, s.menu_icon, s.level,
+        s.position, s.url ,s.is_admin,s.parent_id,code
+        from
+        dream_a_security_resource s
+        <where>
+            <if test="parentId !=null">AND s.parent_id =#{parentId}</if>
+            <if test="status !=null">AND s.status =#{status}</if>
+            <if test="category !=null">AND s.category =#{category}</if>
+        </where>
+        order by position asc
+    </select>
+
+    <select id="getChildMenuByActorId" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select DISTINCT s.id, s.name,
+        s.description, s.category, s.menu_icon, s.level,
+        s.position, s.url ,s.is_admin
+        from
+        dream_a_authorization da,
+        dream_a_security_resource_assignmen ds,
+        dream_a_security_resource s
+        <where>
+            da.actor_id=#{actorId}
+            and da.authority_id = ds.authority_id
+            and ds.security_resource_id = s.id
+            <if test="parentId !=null">AND s.parent_id =#{parentId}</if>
+            <if test="status !=null">AND s.status =#{status}</if>
+            <if test="category !=null">AND s.category =#{category}</if>
+        </where>
+        order by position asc
+    </select>
+
+
+    <select id="getAllLeafMenu" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id,
+        s.name,
+        s.description, s.category, s.menu_icon,
+        s.level,s.is_leaf,
+        s.position,
+        s.url
+        from
+        dream_a_security_resource s
+        where s.level = 1
+        and s.status = 1
+        <if test="category !=null">AND s.category =#{category}</if>
+        <if test="type !=null">AND s.type =#{type}</if>
+    </select>
+
+    <select id="findMenuResources" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select id, name, description, category, menu_icon, level, position,
+        url,parent_id,is_leaf,is_admin,code
+        from
+        dream_a_security_resource
+        where
+        status = 1
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="level != null">
+            and level = #{level}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+        <if test="name != null">
+            and name = #{name}
+        </if>
+        <if test="description != null">
+            and description = #{description}
+        </if>
+        <if test="parentId !=null">
+            and parent_id =#{parentId}
+        </if>
+        order by position asc
+    </select>
+    <!-- 根据角色id获得授权给角色的菜单资源数据 -->
+    <select id="findMenuResourcesByRoleId" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time, s.url,
+        s.menu_icon,s.position, s.level,s.parent_id ,s.is_admin
+        from
+        dream_a_security_resource s,dream_a_security_resource_assignmen a
+
+        <where>  a.security_resource_id = s.id
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+            <if test="level != null">
+                and s.level = #{level}
+            </if>
+            <if test="roleId != null">
+                and a.authority_id = #{roleId}
+            </if>
+            <if test="status !=null">
+                and status = #{status}
+            </if>
+            order by position asc
+        </where>
+    </select>
+    <!-- 根据父菜单id和角色id获得该角色下的子菜单列表 ,由于关联了菜单关系表不需要数据类型 -->
+    <select id="queryMenuResourcesByParentIdRoleId"
+            resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time, s.url,
+        s.menu_icon,s.position, s.level,s.parent_id,s.is_leaf,s.is_admin
+        from
+        dream_a_security_resource s
+        INNER
+        JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        <where>
+            <if test="parentId != null">
+                and s.parent_id = #{parentId}
+            </if>
+            <if test="roleId != null">
+                and a.authority_id = #{roleId}
+            </if>
+            <if test="status !=null">
+                and status = #{status}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+        </where>
+        order by s.position asc
+    </select>
+
+    <select id="pagingqueryMenu" resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select sr.id, sr.name, sr.description, sr.category, sr.menu_icon,
+        sr.level, sr.position, sr.url, sr.parent_id,sr.type,(select `name`
+        from
+        dream_a_security_resource where id = sr.parent_id) as parent_name
+        from
+        dream_a_security_resource sr
+
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+            <if test="status !=null">
+                and status = #{status}
+            </if>
+            <if test="type !=null">
+                and type = #{type}
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingqueryMenu_count" resultType="java.lang.Integer">
+        select count(sr.id)
+        from
+        dream_a_security_resource sr
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+            <if test="status !=null">
+                and status = #{status}
+            </if>
+            <if test="type !=null">
+                and type = #{type}
+            </if>
+        </where>
+    </select>
+    <!-- *********************************************URL访问权限资源********************************************************* -->
+
+    <insert id="createUrlAccess" parameterType="org.songbai.loan.admin.admin.model.AdminUrlAccessResourceModel"
+            useGeneratedKeys="true" keyProperty="id">
+		insert into
+		dream_a_security_resource
+		(name, description, category,
+		url,parent_id,is_admin,type)
+		values
+		(#{name, jdbcType=VARCHAR},
+		#{description, jdbcType=VARCHAR},
+		#{category, jdbcType=VARCHAR},
+		#{url,jdbcType=VARCHAR},
+		#{parentId,jdbcType=INTEGER},
+		#{isAdmin,jdbcType=TINYINT},
+		#{type,jdbcType=INTEGER})
+	</insert>
+
+    <update id="updateUrlAccess" parameterType="org.songbai.loan.admin.admin.model.AdminUrlAccessResourceModel">
+        update dream_a_security_resource
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="url != null">url = #{url},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="isAdmin != null">is_admin = #{isAdmin},</if>
+            <if test="type !=null">type =#{type},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="pagingQueryUrlAccess" parameterType="java.util.HashMap"
+            resultType="org.songbai.loan.admin.admin.model.AdminUrlAccessResourceModel">
+        select sr.id, sr.name, sr.description, sr.category,
+        sr.create_time,sr.url,
+        sr.identifier,sr.parent_id,sr.is_leaf,sr.is_admin,sr.type,
+        sr.level,(SELECT
+        name from
+        dream_a_security_resource where id =
+        sr.parent_id) as
+        parent_name
+        from
+        dream_a_security_resource sr
+        where
+        status = 1
+        <if test="name != null">
+            and name like #{name}
+        </if>
+        <if test="url != null">
+            and url = #{url}
+        </if>
+        <if test="description != null">
+            and description like #{description}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+        <if test="type !=null">
+            and type =#{type}
+        </if>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryUrlAccess_count" parameterType="java.util.HashMap"
+            resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_security_resource
+        where status = 1
+        <if test="name != null">
+            and name like #{name}
+        </if>
+        <if test="url != null">
+            and url = #{url}
+        </if>
+        <if test="description != null">
+            and description like #{description}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+        <if test="type !=null">
+            and type =#{type}
+        </if>
+    </select>
+    <select id="getUrlAccessResourcesByActorId"
+            resultType="org.songbai.loan.admin.admin.model.AdminUrlAccessResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time,
+        s.url,s.level
+        from dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        INNER JOIN dream_a_authorization da
+        ON da.authority_id = a.authority_id
+        <where>
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="dataId != null">
+                and da.data_id = #{dataId}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getSecurityResourcesByActorId"
+            resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time,
+        s.url,s.level
+        from dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        INNER JOIN dream_a_authorization da
+        ON da.authority_id = a.authority_id
+        <where>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="dataId != null">
+                and da.data_id = #{dataId}
+            </if>
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAllUrlAccessByRoleId" resultType="org.songbai.loan.admin.admin.model.AdminUrlAccessResourceModel">
+		select s.id,
+		s.name, s.description, s.category, s.create_time,
+		s.identifier
+		from
+		dream_a_security_resource s
+		INNER JOIN
+		dream_a_security_resource_assignmen a
+		ON s.id = a.security_resource_id
+		where s.category = #{category} and a.authority_id = #{roleId} and
+		a.data_id = #{dataId}
+	</select>
+    <!-- ********************页面元素资源权限资源**************** -->
+
+    <insert id="createPageElement" parameterType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel"
+            useGeneratedKeys="true" keyProperty="id">
+		insert into
+		dream_a_security_resource
+		(name, description, category,
+		identifier,parent_id,is_admin,type,url)
+		values (#{name,
+		jdbcType=VARCHAR},
+		#{description, jdbcType=VARCHAR},
+		#{category,
+		jdbcType=VARCHAR},
+		#{identifier,jdbcType=VARCHAR},#{parentId,
+		jdbcType=INTEGER},#{isAdmin,
+		jdbcType=TINYINT},#{type,
+		jdbcType=INTEGER},#{url,jdbcType=VARCHAR})
+	</insert>
+
+    <update id="updatePageElement" parameterType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+        update dream_a_security_resource
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="identifier != null">identifier = #{identifier},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="isAdmin != null">is_admin = #{isAdmin},</if>
+            <if test="type !=null">type = #{type},</if>
+            <if test="url !=null">url = #{url},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="pagingQueryPageElement" parameterType="java.util.HashMap"
+            resultType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+        select sr.id, name, sr.description, sr.category,
+        sr.create_time,sr.url,
+        sr.identifier,sr.parent_id,sr.is_leaf,sr.is_admin, sr.type,(SELECT
+        name from
+        dream_a_security_resource where id = sr.parent_id) as
+        parent_name
+        from
+        dream_a_security_resource sr
+        where status = 1
+        <if test="name != null">
+            and name like #{name}
+        </if>
+        <if test="description != null">
+            and description like #{description}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+        <if test="identifier != null">
+            and identifier = #{identifier}
+        </if>
+        <if test="type !=null">
+            and type = #{type}
+        </if>
+        <if test="parentId !=null">
+            and sr.parent_id = #{parentId}
+        </if>
+        order by parent_id
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryPageElement_count" parameterType="java.util.HashMap"
+            resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_security_resource
+        where status = 1
+        <if test="name != null">
+            and name like #{name}
+        </if>
+        <if test="description != null">
+            and description like #{description}
+        </if>
+        <if test="category != null">
+            and category = #{category}
+        </if>
+        <if test="identifier != null">
+            and identifier = #{identifier}
+        </if>
+        <if test="type !=null">
+            and type = #{type}
+        </if>
+        <if test="parentId !=null">
+            and parent_id = #{parentId}
+        </if>
+    </select>
+    <select id="pagingQueryGrantPageElementByRoleId"
+            resultType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time,s.url,
+        s.identifier
+        from dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        <where>
+
+            <if test="name != null">
+                and s.name like #{name}
+            </if>
+            <if test="description != null">
+                and s.description like #{description}
+            </if>
+            <if test="identifier != null">
+                and s.identifier like #{identifier}
+            </if>
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+            <if test="roleId != null">
+                and a.authority_id = #{roleId}
+            </if>
+            <if test="dataId != null">
+                and a.data_id = #{dataId}
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryGrantPageElementByRoleId_count"
+            resultType="java.lang.Integer">
+        select count(s.id)
+        from dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        <where>
+            <if test="name != null">
+                and s.name like #{name}
+            </if>
+            <if test="description != null">
+                and s.description like #{description}
+            </if>
+            <if test="identifier != null">
+                and s.identifier like #{identifier}
+            </if>
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+            <if test="roleId != null">
+                and a.authority_id = #{roleId}
+            </if>
+            <if test="dataId != null">
+                and a.data_id = #{dataId}
+            </if>
+        </where>
+    </select>
+
+    <select id="pagingQueryNotGrantPageElementByRoleId"
+            resultType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+        SELECT s.id, s.name, s.category, s.create_time, s.description,s.url,
+        s.identifier FROM dream_a_security_resource s
+        where s.id not in (SELECT
+        s.id FROM dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        WHERE a.authority_id = #{roleId})
+        <if test="name != null">
+            and s.name like #{name}
+        </if>
+        <if test="description != null">
+            and s.description like #{description}
+        </if>
+        <if test="identifier != null">
+            and s.identifier like #{identifier}
+        </if>
+        <if test="category != null">
+            and s.category = #{category}
+        </if>
+        <if test="dataId != null">
+            and a.data_id = #{dataId}
+        </if>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryNotGrantPageElementByRoleId_count"
+            resultType="java.lang.Integer">
+        SELECT count(s.id) FROM dream_a_security_resource s
+        where s.id not in
+        (SELECT s.id FROM dream_a_security_resource s
+        INNER JOIN
+        dream_a_security_resource_assignmen a
+        ON s.id = a.security_resource_id
+        WHERE a.authority_id = #{roleId})
+        <if test="name != null">
+            and s.name like #{name}
+        </if>
+        <if test="description != null">
+            and s.description like #{description}
+        </if>
+        <if test="identifier != null">
+            and s.identifier like #{identifier}
+        </if>
+        <if test="category != null">
+            and s.category = #{category}
+        </if>
+        <if test="dataId != null">
+            and a.data_id = #{dataId}
+        </if>
+    </select>
+
+
+    <select id="getPagelementByActorIdIdDdentifier"
+            resultType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+		select distinct s.id, s.name, s.description, s.category,
+		s.create_time,
+		s.identifier,s.url,s.type
+		from dream_a_security_resource
+		s
+		INNER JOIN
+		dream_a_security_resource_assignmen a
+		ON s.id =
+		a.security_resource_id
+		INNER JOIN dream_a_authorization da
+		ON
+		da.authority_id = a.authority_id
+		where da.actor_id = #{actorId}
+		and
+		s.identifier = #{identifier}
+		and da.data_id = #{dataId}
+		and s.status =1
+	</select>
+
+    <select id="getPagelementByTypeDdentifier"
+            resultType="org.songbai.loan.admin.admin.model.AdminPageElementResourceModel">
+		select
+		s.id, s.name, s.description, s.category, s.create_time,
+		s.identifier,s.url,s.type
+		from dream_a_security_resource s
+		where
+		s.identifier = #{identifier}
+		and s.status = 1
+	</select>
+
+    <select id="getPageElementByActorId" resultType="java.lang.String">
+		select distinct
+		s.identifier
+		from dream_a_security_resource s
+		INNER JOIN
+		dream_a_security_resource_assignmen a
+		ON s.id = a.security_resource_id
+		INNER JOIN dream_a_authorization da
+		ON da.authority_id = a.authority_id
+		where da.actor_id = #{actorId}
+		and s.category = #{category}
+	</select>
+
+    <select id="getPageElementAll" resultType="java.lang.String">
+		select s.identifier
+		from
+		dream_a_security_resource s
+		where s.category = #{category}
+		and s.status = 1
+	</select>
+
+    <select id="getAllByMenuIdByCategory" resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+		select DISTINCT r.id,r.* from dream_a_security_resource_assignmen ra, dream_a_security_resource  r,dream_a_authorization da
+		where da.actor_id=#{id} and da.authority_id= ra.authority_id and ra.security_resource_id = r.id
+		and r.category = #{category}
+		and r.status = 1
+	</select>
+
+    <select id="getAllByMenuIdByCategoryForSuperMan"
+            resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+		select * from   dream_a_security_resource  
+		where category = #{category}
+		  and status = 1 and type = 0
+	</select>
+
+    <select id="getAdminMenuResourceByActorId" parameterType="java.lang.Integer"
+            resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+		select DISTINCT da.id, da.name, da.description, da.category, da.menu_icon, da.level, da.position,
+		url,parent_id,is_leaf,is_admin
+		from dream_a_authorization daa ,
+		     dream_a_security_resource_assignmen ds,
+		     dream_a_security_resource da
+		where daa.actor_id = #{actorId} and daa.authority_id= ds.authority_id and ds.security_resource_id  = da.id and da.status = 1  
+					and da.category ='MENU'
+					and da.level = 0
+	</select>
+
+
+    <select id="getAllByMenuIdByCategoryAndDeptId"
+            resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+        select DISTINCT r.id,r.* from dream_a_department_resource dr, dream_a_security_resource r
+        where dr.resource_id = r.id
+        <if test="agencyId != null ">
+            AND dr.agency_id = #{agencyId}
+        </if>
+        <if test="type != null ">
+            AND dr.type = #{type}
+        </if>
+        <if test="deptId != null ">
+            AND dr.dept_id = #{deptId}
+        </if>
+        <if test="category != null ">
+            and r.category = #{category}
+        </if>
+        <if test="parentId != null ">
+            AND r.parent_id = #{parentId}
+        </if>
+        and r.status = 1
+    </select>
+    <select id="isHaveRoleForActor" resultType="java.lang.Integer">
+        select count(1) from dream_a_authorization
+        where actor_id = #{actorId}
+        <foreach collection="authorityIds" item="auth" open="and authority_id in (" separator="," close=")">
+            #{auth}
+        </foreach>
+    </select>
+    <select id="findCountByCode" resultType="java.lang.Integer">
+        select count(1) from dream_a_security_resource where code = #{code}
+        <if test="id != null and id != '' ">
+            <![CDATA[ AND id <> #{id}]]>
+        </if>
+    </select>
+    <select id="findMenuResourcesByDeptId"
+            resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time, s.url,
+        s.menu_icon,s.position, s.level,s.parent_id ,s.is_admin
+        from dream_a_security_resource s,dream_a_department_resource adr
+        <where>s.id = adr.resource_id
+            <if test="category != null">
+                and s.category = #{category}
+            </if>
+            <if test="level != null">
+                and s.level = #{level}
+            </if>
+            <if test="deptId != null">
+                and adr.dept_id = #{deptId}
+            </if>
+            <if test="status !=null">
+                and s.status = #{status}
+            </if>
+            <if test="agencyId != null ">
+                AND adr.agency_id = #{agencyId}
+            </if>
+            <if test="type != null ">
+                AND adr.type = #{type}
+            </if>
+            order by s.position asc
+        </where>
+
+    </select>
+    <select id="findMenuResourceByAgencyId"
+            resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.* from dream_a_security_resource s,dream_a_department_resource adr
+        where s.id = adr.resource_id and s.status = 1 and adr.type = 1
+        <if test="category != null">
+            and s.category = #{category}
+        </if>
+        <if test="level != null">
+            and s.level = #{level}
+        </if>
+        <if test="dataId != null ">
+            AND adr.agency_id = #{dataId}
+        </if>
+
+    </select>
+    <select id="queryMenuResourcesByParentIdActor"
+            resultType="org.songbai.loan.admin.admin.model.AdminMenuResourceModel">
+        select s.id, s.name, s.description, s.category, s.create_time, s.url,
+        s.menu_icon,s.position, s.level,s.parent_id,s.is_leaf,s.is_admin
+        from dream_a_security_resource s,dream_a_department_resource adr
+        <where>
+            s.id = adr.resource_id
+            <if test="parentId != null">
+                and s.parent_id = #{parentId}
+            </if>
+            <if test="agencyId != null">
+                and adr.agency_id = #{agencyId}
+            </if>
+            <if test="status !=null">
+                and s.status = #{status}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+            <if test="type != null ">
+                AND adr.type = #{type}
+            </if>
+            <if test="deptId != null ">
+                AND adr.dept_id = #{deptId}
+            </if>
+        </where>
+        order by s.position asc
+    </select>
+    <select id="getPageElementByDeptId" resultType="java.lang.String">
+        select distinct s.identifier
+        from dream_a_security_resource s,dream_a_department_resource dr
+        <where>s.status = 1 and s.id = dr.resource_id
+            <if test="deptId != null ">
+                and dr.dept_id = #{deptId}
+            </if>
+            <if test="type != null ">
+                and dr.type = #{type}
+            </if>
+            <if test="agencyId != null ">
+                And dr.agency_id = #{agencyId}
+            </if>
+            <if test="category != null ">
+                and s.category = #{category}
+            </if>
+        </where>
+    </select>
+
+</mapper>

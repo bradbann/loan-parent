@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.finance.dao.FinanceIODao">
+    <select id="getModelByUserIdOrderIdRequestId" resultType="org.songbai.loan.model.finance.FinanceIOModel">
+        select * from loan_u_finance_io
+        <where>
+            <if test="thirdId != null">
+                and third_user_id = #{thirdId}
+            </if>
+            <if test="orderNum != null">
+                and order_id = #{orderNum}
+            </if>
+            <if test="requestId != null">
+                and request_id = #{requestId}
+            </if>
+        </where>
+    </select>
+    <select id="selectRepayProcessingOrder" resultType="java.lang.Integer">
+		select max(id) from loan_u_finance_io where status = 4 and type in (1,2) and pay_platform = #{code} and DATE_SUB(update_time,interval 3 minute) and to_days(update_time) = to_days(now()) GROUP BY order_id
+	</select>
+    <select id="findFinanceIoByOrderNumber" resultType="org.songbai.loan.model.finance.FinanceIOModel">
+        select * from loan_u_finance_io where order_id=#{orderNumber} order by id desc limit 1
+    </select>
+    <select id="getLastModelByUserIdOrderId" resultType="org.songbai.loan.model.finance.FinanceIOModel">
+		select * from loan_u_finance_io where user_id = #{userId} and order_id = #{orderId} and type = 1 and status = 4 order by id desc limit 1
+	</select>
+    <select id="selectNotConfirmOrderByJh" resultType="org.songbai.loan.model.finance.FinanceIOModel">
+		select * from loan_u_finance_io t
+		where  t.pay_type in (0,1)
+		and t.status =  4 and t.type = 1
+		and t.create_time between #{begin} and #{end}
+
+		order by t.id
+		limit #{page},#{pageSize}
+	</select>
+    <select id="getIoModelByOrderIdAndRequestId" resultType="org.songbai.loan.model.finance.FinanceIOModel">
+        select * from loan_u_finance_io where order_id = #{orderNumber} and request_id = #{requestId} and user_id = #{userId}
+    </select>
+</mapper>

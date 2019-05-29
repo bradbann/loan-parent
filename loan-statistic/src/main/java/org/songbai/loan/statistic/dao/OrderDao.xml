@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.OrderDao">
+
+    <update id="updateOrderChaseInfoById">
+        update loan_u_order set chase_dept_id = #{chaseDeptId},chase_id = #{chaseId},chase_actor_id = #{chaseActorId},chase_date = #{chaseDate}
+        where id = #{id}
+    </update>
+
+
+
+    <sql id="base_where">
+        <where>
+            <if test="po.agencyId != null ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.orderStage != null ">
+                AND t.stage = #{po.orderStage}
+            </if>
+            <if test="po.orderStatus != null ">
+                AND t.status = #{po.orderStatus}
+            </if>
+            <if test="po.orderAuthStatus != null ">
+                AND t.auth_status = #{po.orderAuthStatus}
+            </if>
+            <if test="po.userPhone != null ">
+                AND user.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startDate!=null">
+                And t.create_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And t.create_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.paymentTimeStart!=null">
+                And t.repayment_date &gt;= #{po.paymentTimeStart}
+            </if>
+            <if test="po.paymentTimeEnd!=null">
+                And t.repayment_date &lt;= #{po.paymentTimeEnd}
+            </if>
+            <if test="po.realPaymentTimeStart!=null">
+                And t.repayment_time &gt;= #{po.realPaymentTimeStart}
+            </if>
+            <if test="po.realPaymentTimeEnd!=null">
+                And t.repayment_time &lt;= #{po.realPaymentTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+
+    <sql id="payment_sql">
+        <where>
+            o.stage=3 and auth_status=1
+            <if test="po.agencyId !=null">
+                and o.agency_id=#{po.agencyId}
+            </if>
+            <if test="po.status !=null">
+                and o.status=#{po.status}
+            </if>
+            <if test="po.status ==null">
+                and o.status in (1,6)
+            </if>
+            <if test="po.orderNumber !=null">
+                and o.order_number=#{po.orderNumber}
+            </if>
+            <if test="po.userPhone !=null">
+                and u.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.startDate!=null">
+                And o.review_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And o.review_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.reviewId!=null">
+                And o.review_id = #{po.reviewId}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findRecentOrderByUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where user_id=#{userId}
+        order by id
+        desc limit 1
+    </select>
+    <select id="findOrderOverdueCountByUserId" resultType="java.lang.Integer">
+        select count(1) from loan_u_order
+        where user_id=#{userId} and stage=4 and status in (4,5,7)
+    </select>
+    <select id="findOrderOverdueCountByUserIdAndDays" resultType="java.lang.Integer">
+        select count(1) from loan_u_order
+        where user_id=#{userId} and stage=4 and status in (4,5,7) and exceed_days &gt;=#{days}
+    </select>
+    <sql id="repay_where">
+        <where>
+            o.stage=4
+            <if test="po.agencyId !=null">
+                and o.agency_id=#{po.agencyId}
+            </if>
+            <if test="po.orderNumber !=null">
+                and o.order_number=#{po.orderNumber}
+            </if>
+            <if test="po.userPhone !=null">
+                and u.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.status!=null">
+                and o.status = #{po.status}
+            </if>
+            <if test="po.status==null">
+                and o.status in (1,3,4)
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findTodayRepayOrder" resultType="java.lang.Integer">
+        select u.id from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        where  o.stage=4 and o.status=1
+          and o.repayment_date=#{today} and u.vest_id=#{vestId}
+        <if test="page!=null">
+            limit #{page.limit},#{page.pageSize}
+        </if>
+    </select>
+    <select id="findOrderOverdueByAgencyId" resultType="org.songbai.loan.statistic.model.po.OrderPO">
+        select * from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        where o.stage=4 and o.status=4 and u.vest_id=#{vestId}
+    </select>
+
+    <select id="queryWaitReviewOrderGroup" resultType="java.util.Map">
+        select agency_id agencyId ,count(1) waitCount
+        from loan_u_order
+        where stage=2 and status=1
+        <if test="createTime != null ">
+            AND create_time = #{createTime}
+        </if>
+        group by agency_id
+    </select>
+    <select id="findTodayRepayStatisticByAgencyId" resultType="org.songbai.loan.model.statistic.RepayStatisticModel">
+        select
+               count(1) as orderCount,
+               IFNULL(sum(if(status=6,1,0)),0) as  earlyCount,
+               IFNULL(sum(if(status=2,1,0)),0) as  normalCount,
+               IFNULL(sum(if(status in (5,7),1,0)),0) as  overdueCount,
+               IFNULL(sum(if(status=4,1,0)),0) as  overduePayCount,
+               IFNULL(sum(if(status=3,1,0)),0) as  repayFailCount,
+               IFNULL(sum(payment),0) as repayAmount,
+               IFNULL(sum(already_money),0) as realRepayAmount,
+               IFNULL(sum(obtain),0) as payAmount,
+               IFNULL(sum(exceed_fee),0) as exceedAmount,
+               IFNULL(sum(deduct_money),0) as deductAmount,
+               IFNULL(sum(payment-deduct_money),0) as leftAmount
+
+        from loan_u_order
+        where  repayment_date>=#{repayDate} and stage=4 and agency_id=#{agencyId}
+        group by repayment_date
+    </select>
+    <select id="findOrderCountByAgencyId" resultType="org.songbai.loan.model.statistic.UserStatisticModel">
+        select
+               count(1) as orderCount,
+               IFNULL(sum(if(guest=1,1,0)),0) as  newCount,
+               IFNULL(sum(if(guest!=1,1,0)),0) as  老客提单人数
+        from loan_u_order
+        where   DATE_FORMAT(create_time, '%Y-%m-%d') =#{date} and agency_id=#{agencyId}
+
+    </select>
+    <select id="findTodayRepayOrderAgencyId" resultType="java.lang.Integer">
+        select distinct u.vest_id from loan_u_order o
+        left join loan_u_user u on o.user_id=u.id
+        where  o.stage=4 and o.status=1
+          and o.repayment_date=#{today}
+    </select>
+    <select id="findOrderOverdueDaysAndFee" resultType="org.songbai.loan.statistic.model.po.PushConditionPO">
+        select exceed_days,exceed_fee from loan_u_order o
+        where o.stage=4 and o.status=4
+        GROUP BY exceed_days,exceed_fee
+    </select>
+
+
+</mapper>

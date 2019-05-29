@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.service.finance.dao.FinanceDao">
+
+	<select id="getCodeByPlatformId" resultType="java.lang.String">
+		select code from loan_u_finance_platform where id = #{id}
+	</select>
+
+	<select id="getBankModelByBankCodeAndPlatformId" resultType="org.songbai.loan.model.finance.FinanceBankModel">
+		select * from loan_u_finance_bank where bank_code = #{bankCode} and pay_platform_id = #{platformId}
+	</select>
+
+	<select id="getUserDefaultBankCard" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where user_id = #{userId} and status = 1 and type = 1 limit 1
+	</select>
+
+	<select id="getPayPlatformConfig" resultType="org.songbai.loan.model.finance.PlatformConfig">
+		select * from loan_u_finance_platform_config where agency_id = #{agencyId} and status = #{status} limit 1
+	</select>
+
+	<select id="selectConfigByPlatformCode" resultType="java.lang.String">
+		select a.param from loan_u_finance_platform_config a LEFT JOIN loan_u_finance_platform b on a.platform_id = b.id where b.code = #{platformCode}
+		<if test="status != null">
+			and a.status = #{status}
+		</if>
+		<if test="agencyId != null">
+			and a.agency_id = #{agencyId}
+		</if>
+		order by a.id asc
+	</select>
+	<select id="selectYibaoConfigUpForAllAgency" resultType="java.lang.String">
+
+		select a.param from loan_u_finance_platform_config a LEFT JOIN loan_u_finance_platform b on a.platform_id = b.id where b.code = 'yibao'
+
+	</select>
+	<select id="getAgencyIdByMD5" resultType="java.lang.Integer">
+		select id from dream_u_agency where id_md5 = #{agencyMD5}
+	</select>
+	<select id="getAgencyMD5ById" resultType="java.lang.String">
+		select id_md5 from dream_u_agency where id = #{id}
+	</select>
+
+</mapper>

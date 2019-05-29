@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.order.dao.PaymentFlowDao">
+
+
+    <select id="findPaymentRecordCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_payment_flow f
+        left join loan_u_user u on u.id=f.user_id
+        <include refid="base_where"/>
+    </select>
+    <select id="findPaymentRecordList" resultType="org.songbai.loan.admin.order.vo.OrderPayRecordVO">
+        select f.*,u.vest_id as vestId,u.channel_code as channelCode from loan_a_payment_flow f
+        left join loan_u_user u on u.id=f.user_id
+        <include refid="base_where"/>
+        order by payment_time desc,id desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findPaymentCountByDate" resultType="org.songbai.loan.admin.order.vo.PaymentStatisticsVO">
+        select count(1) as payCountAll,ifnull(sum(money),0) as payMoneyAll
+        from loan_a_payment_flow
+        <include refid="statistics_where"/>
+    </select>
+    <select id="findStatisticOrderByAgencyIdAndDate" resultType="org.songbai.loan.admin.statistic.model.vo.StatisHomeVO">
+        select
+               ifnull(count(1),0) as payCount,
+               ifnull(sum(if(guest=1,1,0)),0) as firstLoanCount,
+               ifnull(sum(money),0) as payAmount
+        from loan_a_payment_flow
+        <where>
+            DATE_FORMAT(payment_time,'%Y-%m-%d') = #{date}
+            <if test="agencyId!=null">
+                and  agency_id=#{agencyId}
+            </if>
+        </where>
+    </select>
+
+    <sql id="statistics_where">
+        <where>
+            <if test="actorId !=null">
+                and actor_id=#{actorId}
+            </if>
+            <if test="agencyId !=null">
+                and agency_id=#{agencyId}
+            </if>
+            <if test="minTime!=null">
+                and payment_time &gt;= #{minTime}
+            </if>
+            <if test="maxTime!=null">
+                and payment_time &lt;= #{maxTime}
+            </if>
+
+        </where>
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            and u.deleted = 0
+            <if test="po.agencyId != null ">
+                and f.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.vestId != null ">
+                and u.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and u.channel_code = #{po.channelCode}
+            </if>
+
+            <if test="po.userPhone != null ">
+                and f.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.paymentNumber != null ">
+                and f.payment_number =#{po.paymentNumber}
+            </if>
+            <if test="po.orderNumber != null ">
+                and f.order_number =#{po.orderNumber}
+            </if>
+            <if test="po.startDate!=null">
+                and f.payment_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                and f.payment_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.sloanDate!=null">
+                and f.order_time &gt;= #{po.sloanDate}
+            </if>
+            <if test="po.eloanDate!=null">
+                and f.order_time &lt;= #{po.eloanDate}
+            </if>
+
+        </where>
+    </sql>
+
+</mapper>

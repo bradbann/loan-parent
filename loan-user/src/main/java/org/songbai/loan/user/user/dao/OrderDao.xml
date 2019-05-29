@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.OrderDao">
+	<update id="updateOrderForDeduct">
+		update loan_u_order set
+								already_money = already_money + #{deductMoney},
+								charging_money = charging_money + #{deductMoney}
+		  where id = #{orderId}
+	</update>
+    <update id="updateOrderStatus">
+		update loan_u_order set stage= #{stage},status=#{status} where order_number = #{orderNum}
+	</update>
+    <select id="finRecentOrderByUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from  loan_u_order where  user_id=#{userId} order by id desc limit 1
+    </select>
+	<select id="selectOrderCount" resultType="java.lang.Integer">
+        select count(1)  from loan_u_order
+        where user_id=#{userId}
+    </select>
+	<select id="selectOrderList" resultType="org.songbai.loan.user.user.model.vo.OrderListVO">
+        select order_number,loan,stage,status,create_time,payment from loan_u_order
+        where user_id=#{userId}
+        order by create_time desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+	<select id="selectOrderByOrderNumberAndUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from loan_u_order
+        where user_id=#{userId} and order_number=#{orderNumber}
+        limit 1
+    </select>
+	<select id="findUserLoanSuccessLoanOrder" resultType="java.lang.Integer">
+        select count(1) from loan_u_order
+        where user_id=#{userId} and stage=4 and status in (2,5,6,7)
+    </select>
+	<select id="finRecentCompleteOrderByUserId" resultType="org.songbai.loan.model.loan.OrderModel">
+        select * from  loan_u_order where  user_id=#{userId}   and stage=4 and status in (2,5,6,7) order by id desc limit 1
+    </select>
+	<select id="selectWaitRepaymentOrderToday" resultType="org.songbai.loan.user.user.model.vo.OrderVO">
+		SELECT
+			a.*,
+			b.`name`,
+			b.idcard_num AS idCardNum,
+			c.bank_phone,
+			c.bank_card_num,
+			c.bind_platform
+		FROM
+			loan_u_order a
+			LEFT JOIN loan_u_user_info b ON a.user_id = b.user_id
+			LEFT JOIN loan_u_user_bankcard c ON a.user_id = c.user_id
+		WHERE
+			a.order_number in (${ids})
+			AND a.agency_id = #{agencyId}
+			AND a.stage = 4
+			AND a.`status` = 4
+			AND to_days( a.update_time ) = to_days( now( ) )
+			AND c.type = 1
+			AND c.`status` = 1
+		GROUP BY
+			a.order_number
+	</select>
+	<select id="findWaitRepaymentOrder" resultType="org.songbai.loan.model.loan.OrderModel">
+		select * from loan_u_order where user_id = #{userId} and stage = 4 and status in (0,1,3,4) order by id desc limit 1
+	</select>
+
+</mapper>

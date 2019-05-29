@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminResourceAssignmentDao">
+
+    <insert id="creatAdminResourceAssignment" useGeneratedKeys="true" keyProperty="id">
+        insert into dream_a_security_resource_assignmen
+        (security_resource_id, authority_id, data_id,dept_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.securityResourceId}, #{item.authorityId}, #{item.dataId},#{item.deptId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteAdminResourceAssignment">
+        delete from dream_a_security_resource_assignmen
+        <where>
+            <if test="securityResourceId != null">AND security_resource_id = #{securityResourceId}</if>
+            <if test="authorityId != null">AND authority_id = #{authorityId}</if>
+            <if test="dataId != null">AND data_id = #{dataId}</if>
+        </where>
+    </delete>
+
+    <delete id="deleteAdminResourceAssignments">
+        delete from dream_a_security_resource_assignmen
+        <where>
+            <if test="authorityId != null">AND authority_id = #{authorityId}</if>
+            <if test="securityResourceIds != null">
+                AND security_resource_id in
+                <foreach collection="securityResourceIds" item="item" index="index"
+                         open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dataId != null">AND data_id = #{dataId}</if>
+        </where>
+    </delete>
+
+    <select id="getAdminResourceAssignmentIdsByRoleIdCategory"
+            resultType="java.lang.Integer">
+		select a.id from dream_a_security_resource_assignmen a
+		INNER JOIN dream_a_security_resource s
+		ON s.id = a.security_resource_id
+		where a.authority_id = #{roleId}
+		and s.category = #{category}
+		and
+		a.data_id = #{dataId} 
+	</select>
+
+    <delete id="deleteAdminResourceAssignmentsByAuthorityId">
+		delete
+		from dream_a_security_resource_assignmen
+		where authority_id =
+		#{authorityId}
+	</delete>
+
+    <delete id="deleteAdminResourceAssignmentsByIds" parameterType="list">
+        delete from dream_a_security_resource_assignmen
+        <where>
+            <if test="ids != null">
+                AND id in
+                <foreach collection="ids" item="item" index="index" open="("
+                         separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+    <delete id="deleteAdminResourceAssignmentsByDeptId">
+		delete from dream_a_security_resource_assignmen
+		where dept_id = #{deptId}
+	</delete>
+
+    <select id="getByDataIdAthourIdResourceId"
+            resultType="org.songbai.loan.admin.admin.model.AdminResourceAssignmentModel">
+        select a.id from dream_a_security_resource_assignmen a
+        <where>
+            <if test="dataId != null">AND a.data_id = #{dataId}</if>
+            <if test="authorityId != null">AND a.authority_id = #{authorityId}</if>
+            <if test="resourceId != null">AND a.security_resource_id = #{resourceId}</if>
+        </where>
+    </select>
+
+    <select id="getAdminResourceAssignmentIdsByRoleId" resultType="java.lang.Integer">
+        select a.id from dream_a_security_resource_assignmen a
+        <where>
+            <if test="dataId != null">AND a.data_id = #{dataId}</if>
+            <if test="authorityId != null">AND a.authority_id = #{authorityId}</if>
+        </where>
+    </select>
+    <select id="getAdminResourceAssignmentIdsByDeptId" resultType="java.lang.Integer">
+        select a.id from dream_a_security_resource_assignmen a
+        <where>
+            <if test="dataId != null">AND a.data_id = #{dataId}</if>
+            <if test="deptId != null">AND a.dept_id = #{deptId}</if>
+        </where>
+    </select>
+    <select id="findResourceByAuthorityId"
+            resultType="java.lang.Integer">
+        select security_resource_id from dream_a_security_resource_assignmen where authority_id = #{authorityId}
+    </select>
+    <select id="getAllByAgencyIdAndCategory"
+            resultType="org.songbai.loan.admin.admin.model.AdminSecurityResourceModel">
+        select DISTINCT r.id,r.* from dream_a_department_resource adr, dream_a_security_resource  r
+		where adr.agency_id = #{dataId}  and adr.resource_id = r.id
+		and r.category = #{category}
+		and r.status = 1
+		and adr.type = 1
+    </select>
+</mapper>

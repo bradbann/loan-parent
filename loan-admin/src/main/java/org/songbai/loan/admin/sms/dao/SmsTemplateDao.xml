@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.sms.dao.SmsTemplateDao">
+    <insert id="createTemplate" useGeneratedKeys="true" keyProperty="id"
+            parameterType="org.songbai.loan.model.sms.SmsTemplate">
+        INSERT INTO
+        dream_m_sms_template(name,template,sms_type,tele_code,agency_id)
+        values(#{name},#{template},#{smsType},#{teleCode},#{agencyId})
+    </insert>
+
+    <update id="updateTemplate" parameterType="org.songbai.loan.model.sms.SmsTemplate">
+        update dream_m_sms_template
+        <set>
+            <if test="name != null">name=#{name},</if>
+            <if test="template != null">template=#{template},</if>
+            <if test="smsType != null">sms_type=#{smsType},</if>
+            <if test="teleCode != null">tele_code=#{teleCode},</if>
+        </set>
+        where id=#{id} and  agency_id=#{agencyId}
+    </update>
+
+
+    <select id="getAll" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from
+        dream_m_sms_template
+        where deleted = #{deleted} and agency_id=#{agencyId}
+    </select>
+
+    <select id="getById" parameterType="integer" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select *
+        from dream_m_sms_template
+        where id=#{id} and deleted =#{deleted} and agency_id=#{agencyId}
+        limit 1
+    </select>
+
+    <select id="getTemplate" parameterType="integer" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        where
+        id=#{id} limit 1
+    </select>
+
+    <select id="pagingQuery" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        <where>
+            <if test="name != null">AND name like concat('%',#{name},'%')</if>
+            <if test="template != null">AND template like concat('%',#{template},'%')</if>
+            <if test="deleted != null">AND deleted = #{deleted}</if>
+            <if test="smsType != null">and sms_type=#{smsType}</if>
+            <if test="agencyId != null">and agency_id=#{agencyId}</if>
+            <if test="teleCode != null">and tele_code=#{teleCode}</if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingQuery_count" resultType="integer">
+        select count(id)
+        from dream_m_sms_template
+        <where>
+            <if test="name != null">AND name like concat('%',#{name},'%')</if>
+            <if test="template != null">AND template like concat('%',#{template},'%')</if>
+            <if test="deleted != null">AND deleted = #{deleted}</if>
+            <if test="smsType != null">and sms_type=#{smsType}</if>
+            <if test="agencyId != null">and agency_id=#{agencyId}</if>
+            <if test="teleCode != null">and tele_code=#{teleCode}</if>
+        </where>
+    </select>
+
+    <update id="remove" parameterType="org.songbai.loan.model.sms.SmsTemplate">
+        update
+        dream_m_sms_template
+        set
+        deleted = 1 where id=#{id} and agency_id=#{agencyId}
+    </update>
+
+    <select id="findTemplate" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        <where>
+            <if test="name != null">AND name like concat('%',#{name},'%')</if>
+            <if test="template != null">AND template like concat('%',#{template},'%')</if>
+            <if test="smsType != null">and sms_type=#{smsType}</if>
+            <if test="teleCode != null">and tele_code=#{teleCode}</if>
+            AND deleted = 0
+        </where>
+    </select>
+    
+    <select id = "getList" resultType="org.songbai.loan.model.sms.SmsTemplate">
+    	select name,id from dream_m_sms_template where deleted = 0 and agency_id=#{agencyId}
+    </select>
+    <select id="findStartTemplateByAgencyId" resultType="java.lang.Integer">
+        select count(1) from  dream_m_sms_template where agency_id=#{agencyId} and sender_id=#{senderId} and deleted=0 and status=1
+    </select>
+    <select id="findTemplatByAgencyId" resultType="org.songbai.loan.model.sms.SmsTemplate">
+        select * from dream_m_sms_template
+        <where>
+            agency_id=#{agencyId} and deleted=0
+            <if test="vestId!=null">
+                and vest_id=#{vestId}
+            </if>
+            <if test="type!=null">
+                and type=#{type}
+            </if>
+            <if test="senderId!=null">
+                and sender_id=#{senderId}
+            </if>
+            <if test="id!=null">
+                and id !=#{id}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <select id="pagingTemplateQueryCount" resultType="java.lang.Integer">
+        select count(1) from  dream_m_sms_template t
+        left join dream_m_sms_sender s  on s.id=t.sender_id
+        left join dream_u_app_vest c  on t.vest_id=c.id
+        <include refid="base_where"/>
+    </select>
+    <select id="pagingTemplateQueryList" resultType="org.songbai.loan.admin.sms.model.SmsSenderTemplateVO">
+        select t.*,s.name as  senderName,c.name as vestName ,t.agency_id as agencyId from  dream_m_sms_template t
+        left join dream_m_sms_sender s  on s.id=t.sender_id
+        left join dream_u_app_vest c  on t.vest_id=c.id
+        <include refid="base_where"/>
+        order by t.id desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <sql id="base_where">
+        <where>
+            t.agency_id=#{agencyId} and t.deleted=0
+            <if test="vestId!=null">
+                and t.vest_id=#{vestId}
+            </if>
+        </where>
+    </sql>
+
+</mapper>

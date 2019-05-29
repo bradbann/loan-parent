@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminDictionaryDao">
+    <insert id="save">
+        INSERT INTO dream_a_dictionary
+        (type, name, code, value, comments, create_user, update_user)
+        VALUES (#{type}, #{name}, #{code}, #{value}, #{comments}, #{createUser}, #{updateUser})
+    </insert>
+    <update id="update">
+        update dream_a_dictionary
+        <set>
+            <if test="type != null">type = #{type},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="value != null">value = #{value},</if>
+            <if test="comments != null">comments = #{comments},</if>
+            <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteDictionaryById">
+
+        DELETE FROM dream_a_dictionary
+        WHERE id in (${id})
+
+    </delete>
+    <select id="findByPage" resultType="org.songbai.loan.admin.admin.model.AdminDictionaryModel">
+        select d.* from dream_a_dictionary d
+        <where>
+            <if test="model.type != null">and d.type like concat('%', #{model.type}, '%')</if>
+            <if test="model.name != null">and d.name like concat('%', #{model.name}, '%')</if>
+            <if test="model.code != null">and d.code like concat('%', #{model.code}, '%')</if>
+            <if test="model.value != null">and d.value like concat('%', #{model.value}, '%')</if>
+            <if test="model.comments != null">and d.comments like concat('%', #{model.comments}, '%</if>
+            <if test="model.createUser != null">and d.create_user like concat('%', #{model.createUser}, '%')</if>
+            <if test="model.updateUser != null">and d.update_user like concat('%', #{model.updateUser}, '%')</if>
+            <if test="model.status != null">and d.status = #{model.status}</if>
+        </where>
+        limit #{offset},#{size}
+    </select>
+    <select id="findRows" resultType="java.lang.Integer">
+        select count(id) from dream_a_dictionary d
+        <where>
+            <if test="model.type != null">and d.type like concat('%', #{model.type}, '%')</if>
+            <if test="model.name != null">and d.name like concat('%', #{model.name}, '%')</if>
+            <if test="model.code != null">and d.code like concat('%', #{model.code}, '%')</if>
+            <if test="model.value != null">and d.value like concat('%', #{model.value}, '%')</if>
+            <if test="model.comments != null">and d.comments like concat('%', #{model.comments}, '%</if>
+            <if test="model.createUser != null">and d.create_user like concat('%', #{model.createUser}, '%')</if>
+            <if test="model.updateUser != null">and d.update_user like concat('%', #{model.updateUser}, '%')</if>
+            <if test="model.status != null">and d.status = #{model.status}</if>
+        </where>
+    </select>
+    <select id="queryDicToDropDown" resultType="org.songbai.loan.admin.admin.model.AdminDictionaryModel">
+        select d.* from dream_a_dictionary d
+        <where>
+            <if test="model.type != null">and d.type = #{model.type}</if>
+            <if test="model.code != null">and d.code = #{model.code}</if>
+            <if test="model.value != null">and d.value = #{model.value}</if>
+            <if test="model.status != null">and d.status = #{model.status}</if>
+        </where>
+    </select>
+    <select id="findDictionaryByCode" resultType="org.songbai.loan.admin.admin.model.AdminDictionaryModel">
+        select *
+        from dream_a_dictionary
+        where status = 1
+        <if test="code != null">
+            and code = #{code}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        order by id
+    </select>
+</mapper>

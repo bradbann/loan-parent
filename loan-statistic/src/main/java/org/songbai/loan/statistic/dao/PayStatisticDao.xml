@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.PayStatisticDao">
+    <insert id="insertPayStatisticByAgencyIdAndPayDate">
+        insert into loan_s_pay
+                (agency_id,vest_id,pay_date,pay_count,loan_amount,pay_amount,stamp_tax_amount
+        <if test="isFirstLoan == 1">
+            ,first_loan_count,first_loan_amount,first_pay_amount
+        </if>
+        <if test="isAgainLoan == 1">
+            ,again_loan_count,again_loan_amount,again_pay_amount
+        </if>
+        )
+        VALUES
+         (#{agencyId},#{vestId},#{payDate},1,#{loan},#{pay},#{stampTax}
+        <if test="isFirstLoan == 1">
+            ,1,#{loan},#{pay}
+        </if>
+        <if test="isAgainLoan == 1">
+            ,1,#{loan},#{pay}
+        </if>
+        )
+    </insert>
+
+
+    <update id="updatePayStatisticByAgencyIdAndPayDate">
+        update loan_s_pay
+        <set>
+            pay_count=pay_count+1,
+            loan_amount=loan_amount+#{loan},
+            pay_amount=pay_amount+#{pay},
+            stamp_tax_amount=stamp_tax_amount+#{stampTax},
+            <if test="isFirstLoan == 1">
+                first_loan_count=first_loan_count+1,
+                first_loan_amount=first_loan_amount+#{loan},
+                first_pay_amount=first_pay_amount+#{pay},
+            </if>
+            <if test="isAgainLoan == 1">
+                again_loan_count=again_loan_count+1,
+                again_loan_amount=again_loan_amount+#{loan},
+                again_pay_amount=again_pay_amount+#{pay},
+            </if>
+
+        </set>
+        where agency_id=#{agencyId} and pay_date=#{payDate} and vest_id=#{vestId}
+    </update>
+
+</mapper>

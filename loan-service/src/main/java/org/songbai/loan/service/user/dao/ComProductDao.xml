@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.service.user.dao.ComProductDao">
+    <select id="getProductInfoById" resultType="org.songbai.loan.model.loan.ProductModel">
+        select * from loan_u_product where id = #{productId}
+    </select>
+    <select id="getProductGroupByGroupId" resultType="org.songbai.loan.model.loan.ProductGroupModel">
+        select * from loan_u_product_group where id = #{groupId}
+    </select>
+</mapper>

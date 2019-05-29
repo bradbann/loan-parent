@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.order.dao.RepaymentFlowDao">
+
+    <select id="findPaymentRecordCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_payment_flow f
+        <include refid="base_where"/>
+    </select>
+    <select id="findPaymentRecordList" resultType="org.songbai.loan.admin.order.vo.OrderPayRecordVO">
+        select * from loan_a_payment_flow f
+        <include refid="base_where"/>
+        order by payment_time desc,id desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+
+
+    <select id="findRePaymentRecordCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_repayment_flow f
+        left join loan_u_user u on u.id=f.user_id
+        <include refid="base_where"/>
+    </select>
+    <select id="findRePaymentRecordList" resultType="org.songbai.loan.admin.order.vo.OrderRepayRecordVO">
+        select f.*,u.vest_id as vestId,u.channel_code as channelCode
+        from loan_a_repayment_flow f
+        left join loan_u_user u on u.id=f.user_id
+        <include refid="base_where"/>
+        order by f.repayment_time desc,f.id desc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+
+    <sql id="base_where">
+        <where>
+            and u.deleted = 0
+            <if test="po.agencyId != null ">
+                AND f.agency_id = #{po.agencyId}
+            </if>
+
+            <if test="po.userPhone != null ">
+                AND f.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.vestId != null ">
+                AND u.vest_id=#{po.vestId}
+            </if>
+            <if test="po.repayType != null ">
+                AND f.repay_type =#{po.repayType}
+            </if>
+            <if test="po.type != null ">
+                AND f.type =#{po.type}
+            </if>
+            <if test="po.repayType != null ">
+                AND f.repay_type =#{po.repayType}
+            </if>
+            <if test="po.repayStatus != null ">
+                AND f.repay_status =#{po.repayStatus}
+            </if>
+            <if test="po.orderNumber != null ">
+                AND f.order_number =#{po.orderNumber}
+            </if>
+            <if test="po.startDate!=null">
+                And f.repayment_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And f.repayment_time &lt;= #{po.endDate}
+            </if>
+        </where>
+    </sql>
+
+</mapper>

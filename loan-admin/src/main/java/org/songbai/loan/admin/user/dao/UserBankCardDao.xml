@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.user.dao.UserBankCardDao">
+    <update id="updateUserBankCardDeleted">
+        update loan_u_user_bankcard set deleted=1 where user_id=#{userId}
+    </update>
+    <select id="selectUserBindList" resultType="org.songbai.loan.model.user.UserBankCardModel">
+		select * from loan_u_user_bankcard where user_id = #{userId} and status = #{status} order by type desc
+	</select>
+	<select id="getIconByBankCode" resultType="java.lang.String">
+		select distinct icon from loan_u_finance_bank where bank_code = #{bankCode} limit 1
+	</select>
+</mapper>

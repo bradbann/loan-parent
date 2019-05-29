@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.agency.dao.AgencyConfigDao">
+    <select id="findAgencyConfigCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_agency_config
+        <where>
+            <if test="agencyId != null ">
+                AND agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="findAgencyConfigPage" resultType="org.songbai.loan.model.agency.AgencyConfigModel">
+        select * from loan_a_agency_config
+        <where>
+            <if test="agencyId != null ">
+                AND agency_id = #{agencyId}
+            </if>
+        </where>
+        order by id desc
+        limit #{limit},#{pageSize}
+    </select>
+</mapper>

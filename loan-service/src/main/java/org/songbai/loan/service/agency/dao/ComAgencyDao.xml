@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.service.agency.dao.ComAgencyDao">
+
+    <select id="findDefaultAgency" resultType="org.songbai.loan.model.agency.AgencyModel">
+        select * from dream_u_agency where id = 0
+    </select>
+    <select id="findInfoByAmount" resultType="org.songbai.loan.model.agency.AgencyConfigModel">
+        select * from loan_a_agency_config where agency_id = #{agencyId} and amount = #{amount}
+    </select>
+    <select id="findAgencyIdByHost" resultType="java.lang.Integer">
+        select agency_id from dream_u_agency_host where host = #{host} limit 1
+    </select>
+
+    <select id="getChannelId" resultType="java.lang.Integer">
+        select id from loan_a_agency_channel
+        where channel_status = 1 and channel_code = #{channelCode}
+        and agency_id = #{agencyId}
+    </select>
+    <select id="getDefualtChannelId" resultType="java.lang.Integer">
+        select id from loan_a_agency_channel
+        where channel_status = 1 and channel_type = 1
+        and agency_id = #{agencyId}
+        limit 1
+    </select>
+    <select id="getChannelIdByLandCode" resultType="java.lang.Integer">
+        select id from loan_a_agency_channel
+        where channel_status = 1 and land_code = #{landCode}
+          and agency_id = #{agencyId}
+    </select>
+    <select id="findChannelByLandCode" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel
+        where channel_status = 1 and land_code = #{landCode}
+          and agency_id = #{agencyId}
+    </select>
+    <select id="findDefualtChannel" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel
+        where channel_status = 1 and channel_type = 1
+          and agency_id = #{agencyId}
+        limit 1
+    </select>
+    <select id="findVestByIdOrVestCode" resultType="org.songbai.loan.model.version.AppVestModel">
+        select * from dream_u_app_vest
+        where status=1
+        <if test="vestId!=null">
+            and id=#{vestId}
+        </if>
+        <if test="agencyId!=null">
+            and agency_id=#{agencyId}
+        </if>
+        <if test="vestCode!=null">
+            and vest_code=#{vestCode}
+        </if>
+        limit 1
+    </select>
+    <select id="findDefualtVest" resultType="org.songbai.loan.model.version.AppVestModel">
+        select * from dream_u_app_vest
+        where vest_type=1 and agency_id=#{agencyId}
+        limit 1
+    </select>
+    <select id="findVestInfoByVestCode" resultType="org.songbai.loan.model.version.AppVestModel">
+        select * from dream_u_app_vest where agency_id = #{agencyId} and vest_code = #{vestCode}
+    </select>
+    <select id="getVestInfoByVestId" resultType="org.songbai.loan.model.version.AppVestModel">
+        select * from dream_u_app_vest where id = #{vestId}
+    </select>
+    <select id="findChannelNameByAgencyIdAndChannelCode" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select * from loan_a_agency_channel where agency_id=#{agencyId} and channel_code=#{channelCode} limit 1
+    </select>
+</mapper>

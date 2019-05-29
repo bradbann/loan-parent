@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.user.dao.UserReportDao">
+
+    <select id="selectUserDataTask" resultType="java.util.Map">
+        select sources, task_id, account, status
+        from risk_user_data_task
+        where user_id = #{userThirdId}
+          and sources = #{sources}
+          and status = 5
+    </select>
+</mapper>

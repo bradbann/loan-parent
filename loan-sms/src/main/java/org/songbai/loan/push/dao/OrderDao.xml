@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.push.dao.OrderDao">
+
+
+
+    <select id="findTodayRepayOrder" resultType="java.lang.String">
+        select distinct u.gexing from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        where  o.stage=4 and o.status=1
+          and o.repayment_date=#{today} and u.vest_id=#{vestId} and u.gexing is not null
+        <if test="scopces != null">
+            AND u.platform in
+            <foreach collection="scopces" item="item" index="index" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    <select id="findOrderOverdueUserDeviceId" resultType="java.lang.String">
+        select distinct u.gexing from loan_u_order o
+              left join loan_u_user u on u.id=o.user_id
+        where  o.stage=4 and o.status=4
+          and o.exceed_fee=#{exceedFee} and o.exceed_days=#{exceedDays} and u.vest_id=#{vestId} and u.gexing is not null
+        <if test="scopces != null">
+            AND u.platform in
+            <foreach collection="scopces" item="item" index="index" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+    </select>
+    <select id="findCallTodayRepayOrder" resultType="java.lang.String">
+        select distinct u.phone from loan_u_order o
+        left join loan_u_user u on u.id=o.user_id
+        where  o.stage=4 and o.status=1
+        and o.repayment_date=#{today} and u.vest_id=#{vestId}
+        limit #{page.limit},#{page.pageSize}
+    </select>
+
+</mapper>

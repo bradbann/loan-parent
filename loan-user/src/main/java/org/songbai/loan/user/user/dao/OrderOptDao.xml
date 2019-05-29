@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.OrderOptDao">
+	<select id="findOrderOptRecordByOrderNumber" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select stage,status,remark,create_time
+        from  loan_u_order_opt
+        where order_number=#{orderNumber}
+        order by stage asc ,id desc
+    </select>
+	<select id="findAuthFailModel" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt where status=3 and (stage=2 or stage=1)  and user_id=#{userId}  and order_number=#{orderNumber}
+        order by id desc limit 1
+    </select>
+	<select id="findTransferFailModel" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt where status=3 and stage=3 and user_id=#{userId} order by create_time desc limit 1
+    </select>
+	<select id="getLastUpdateOpt" resultType="org.songbai.loan.model.loan.OrderOptModel">
+		select * from loan_u_order_opt where order_number = #{orderNum} and user_id = #{userId} order by id desc limit 1
+	</select>
+	<select id="getLastOptModelByOrderIdUserId" resultType="org.songbai.loan.model.loan.OrderOptModel">
+		select * from loan_u_order_opt where order_number = #{orderNum} and user_id = #{userId} and stage = 4 and status = 0 order by id desc limit 1
+	</select>
+    <select id="findOrderOptByStageAndStatus" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt where order_number = #{orderNum} and stage=#{stage}
+        order by id desc
+        limit 1
+    </select>
+</mapper>

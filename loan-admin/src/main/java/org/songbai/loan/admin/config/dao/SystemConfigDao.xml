@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.config.dao.SystemConfigDao">
+
+    <insert id="createSystemConfig" useGeneratedKeys="true"
+            keyProperty="id" parameterType="org.songbai.loan.admin.config.model.SystemConfigModel">
+		insert into
+		dream_a_system_config(config_key, config_value, remark,config_system)
+		values
+		(#{configKey,jdbcType=VARCHAR},#{configValue,jdbcType=VARCHAR},
+		#{remark,jdbcType=VARCHAR}, #{configSystem,jdbcType=VARCHAR})
+	</insert>
+
+    <update id="updateSystemConfig">
+        update dream_a_system_config
+        <set>
+            <if test="configKey != null">config_key=#{configKey},</if>
+            <if test="configValue != null">config_value=#{configValue},</if>
+            <if test="remark != null">remark=#{remark},</if>
+            <if test="configSystem != null">config_system=#{configSystem}</if>
+        </set>
+        where id=#{id}
+    </update>
+    <delete id="deleteByIds">
+        delete from dream_a_system_config
+        where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="querypaging" resultType="org.songbai.loan.admin.config.model.SystemConfigModel">
+        select * from
+        dream_a_system_config
+        <where>
+            <if test="configKey != null and configKey != '' ">AND config_key like concat('%',#{configKey},'%')</if>
+            <if test="configSystem != null and configSystem != '' ">AND config_system = #{configSystem}</if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="querypaging_count" resultType="java.lang.Integer">
+        select count(id)
+        from
+        dream_a_system_config
+        <where>
+            <if test="configKey != null and configKey != '' ">AND config_key like concat('%',#{configKey},'%')</if>
+            <if test="configSystem != null and configSystem != '' ">AND config_system = #{configSystem}</if>
+        </where>
+    </select>
+
+    <delete id="deleteById">
+		delete from dream_a_system_config
+		where id = #{id}
+	</delete>
+
+    <select id="getById" resultType="org.songbai.loan.admin.config.model.SystemConfigModel">
+		select
+		id, config_key,
+		config_value, remark,config_system
+		from dream_a_system_config
+		where id =
+		#{id}
+		limit 1
+	</select>
+
+    <select id="getByKey" resultType="org.songbai.loan.admin.config.model.SystemConfigModel">
+		select
+		id, config_key,
+		config_value, remark,config_system
+		from dream_a_system_config
+		where config_key =
+		#{key}
+		limit 1
+	</select>
+</mapper>

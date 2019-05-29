@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.finance.dao.FinanceDeductDao">
+    <select id="findDeductFlowCount" resultType="java.lang.Integer">
+        select count(1) FROM loan_a_finance_deduct_flow t, loan_u_user uu,loan_u_order uo
+        <include refid="deduct_flow_where"/>
+    </select>
+    <select id="findDeductFlowList" resultType="org.songbai.loan.admin.finance.model.vo.DeductPageVo">
+        select t.*,uu.name userName,uu.phone userPhone,uu.vest_id as vestId,
+        (uo.loan + uo.exceed_fee - uo.deduct_money) shouldPay
+        FROM loan_a_finance_deduct_flow t, loan_u_user uu,loan_u_order uo
+        <include refid="deduct_flow_where"/>
+        order by t.create_time desc,t.id
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="findDeductTotal" resultType="java.util.Map">
+        select count(1) count,
+        IFNULL(sum(IF(t.`status` = 2,1,0)),0) succCount,
+        IFNULL(sum(IF(t.`status` = 3,1,0)),0) failCount,
+        count(DISTINCT(t.order_number)) orderCount,
+        CONCAT(IFNULL(sum(if(t.`status` = 2,t.deduct_money,0)),0)) deductMoney
+        from loan_a_finance_deduct_flow t
+        <where>
+            <if test="agencyId != null ">
+                and t.agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="findDeductQueueCount" resultType="java.lang.Integer">
+        select count(1)  from loan_a_finance_deduct d
+        left join loan_u_user u on u.id=d.user_id
+        left join  loan_u_order o  on o.order_number=d.order_number
+        <include refid="deduct_where"/>
+    </select>
+    <select id="findDeductQueueList" resultType="org.songbai.loan.admin.finance.model.vo.DeductQueueVo">
+        select d.order_number as orderNumber ,d.payment as payment,d.deduct_money as deductMoney,d.status as status,o.repayment_date as repaymentDate,d.remark as remark,d.deduct_num as deductNum,
+        u.name as userName,u.phone as userPhone,u.vest_id as vestId
+        from loan_a_finance_deduct d
+        left join loan_u_user u on u.id=d.user_id
+        left join  loan_u_order o  on o.order_number=d.order_number
+        <include refid="deduct_where"/>
+        order by d.create_time desc,d.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <sql id="deduct_where">
+        <where>
+            d.agency_id=#{po.agencyId}
+            and u.deleted = 0
+            <if test="po.orderNumber != null ">
+                and d.order_number = #{po.orderNumber}
+            </if>
+            <if test="po.userPhone != null ">
+                and u.phone = #{po.userPhone}
+            </if>
+            <if test="po.vestId != null ">
+                and u.vest_id = #{po.vestId}
+            </if>
+            <if test="po.startRepayMentDate != null ">
+                and o.repayment_date &gt;= #{po.startRepayMentDate}
+            </if>
+            <if test="po.endRepayMentDate != null ">
+                and o.repayment_date &lt;= #{po.endRepayMentDate}
+            </if>
+            <if test="po.status != null ">
+                and d.status = #{po.status}
+            </if>
+        </where>
+    </sql>
+    <sql id="deduct_flow_where">
+        <where> t.user_id = uu.id and t.order_number = uo.order_number and uu.deleted = 0
+            <if test="po.orderNumber != null ">
+                and t.order_number = #{po.orderNumber}
+            </if>
+            <if test="po.userPhone != null ">
+                and uu.phone = #{po.userPhone}
+            </if>
+            <if test="po.vestId != null ">
+                and uu.vest_id = #{po.vestId}
+            </if>
+            <if test="po.payPlatform != null ">
+                and t.pay_platform = #{po.payPlatform}
+            </if>
+            <if test="po.deductStatus != null ">
+                and t.status = #{po.deductStatus}
+            </if>
+            <if test="po.agencyId != null ">
+                and t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.startRepayMentDate != null ">
+                and t.repayment_date &gt;= #{po.startRepayMentDate}
+            </if>
+            <if test="po.endRepayMentDate != null ">
+                and t.repayment_date &lt;= #{po.endRepayMentDate}
+            </if>
+            <if test="po.startDeductDate != null ">
+                and t.deduct_time &gt;= #{po.startDeductDate}
+            </if>
+            <if test="po.endDeductDate != null ">
+                and t.deduct_time &lt;= #{po.endDeductDate}
+            </if>
+        </where>
+    </sql>
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.channel.dao.ActorChannelDao">
+    <insert id="createActorChannel">
+        insert into loan_a_actor_channel
+        (actor_id, channel_id, agency_id)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.actorId}, #{item.channelId}, #{item.agencyId})
+        </foreach>
+    </insert>
+    <delete id="deleteByActorId">
+        delete from loan_a_actor_channel where actor_id = #{actorId}
+    </delete>
+    <select id="findActorManagerList" resultType="org.songbai.loan.model.channel.AgencyChannelModel">
+        select t.* from loan_a_agency_channel t,loan_a_actor_channel ac
+        where t.id = ac.channel_id and ac.actor_id = #{actorId}
+        and t.channel_status = 1
+        <if test="agencyId != null ">
+            and ac.agency_id = #{agencyId}
+        </if>
+        order by t.id
+    </select>
+</mapper>

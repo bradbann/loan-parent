@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.statistic.dao.StatisticDao">
+
+    <select id="queryUserStatisCount" resultType="java.lang.Integer">
+        select count(1) from ( <include refid="base_select_sql" /> ) gg
+    </select>
+    <select id="findUserStatisList" resultType="org.songbai.loan.admin.statistic.model.vo.UserStatisVo">
+        <include refid="base_select_sql"/>
+        <include refid="base_orderBy" />
+        limit #{po.limit},#{po.pageSize}
+    </select>
+
+    <sql id="base_select_sql">
+        SELECT
+        t.agency_id,t.channel_code,
+        <if test="po.isTotal == null or po.isTotal == 0">t.statistic_date,</if>
+        <if test="po.isVest == 1">t.vest_id,</if>
+        sum(t.uv_count) uv_count,
+        sum(t.register_count) register_count,
+        sum(t.login_count) login_count,
+        sum(t.order_count) order_count,
+        sum(t.pay_count) pay_count
+        FROM
+        loan_s_user t
+        <include refid="base_where"/>
+        group by t.agency_id,t.channel_code
+        <if test="po.isTotal == null or po.isTotal == 0">,t.statistic_date</if>
+        <if test="po.isVest == 1">,t.vest_id</if>
+    </sql>
+
+    <sql id="base_orderBy">
+        order by
+        <if test="po.isTotal == null or po.isTotal == 0">t.statistic_date desc ,</if>
+        register_count desc,t.agency_id,t.channel_code
+        <if test="po.isVest == 1">,t.vest_id</if>
+    </sql>
+    <sql id="base_where">
+        <where>
+            <if test="po.agencyId != null ">
+                and t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.startCalcDate != null ">
+                and t.statistic_date &gt;= #{po.startCalcDate}
+            </if>
+            <if test="po.endCalcDate != null ">
+                and t.statistic_date &lt;= #{po.endCalcDate}
+            </if>
+            <if test="po.vestId != null ">
+                and t.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and t.channel_code = #{po.channelCode}
+            </if>
+
+        </where>
+    </sql>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.statistic.dao.PayStatisticDao">
+
+    <select id="findStatisticPaymentCount" resultType="java.lang.Integer">
+        select count(1) from ( select count(1) from loan_s_pay p
+        <include refid="base_where"/>
+        <if test="po.isVest==0">
+            group by p.pay_date
+        </if>
+        ) a
+    </select>
+    <select id="findStatisticPaymentList" resultType="org.songbai.loan.admin.statistic.model.vo.StatisticPayVO">
+        select
+        <if test="po.isVest==0">
+            agency_id,vest_id,pay_date,
+            sum(pay_count) as payCount,sum(loan_amount) as loanAmount,
+            sum(pay_amount) as payAmount,sum(first_loan_count) as firstLoanCount,
+            sum(first_loan_amount) as firstLoanAmount,sum(first_pay_amount) as firstPayAmount,
+            sum(again_loan_count) as againLoanCount,sum(again_loan_amount) as againLoanAmount,
+            sum(again_pay_amount) as againPayAmount,sum(stamp_tax_amount) as stampTaxAmount
+        </if>
+        <if test="po.isVest==1"> * </if>
+        from loan_s_pay p
+        <include refid="base_where"/>
+        <if test="po.isVest==0">
+            group by p.pay_date
+        </if>
+        order by p.pay_date desc ,p.agency_id asc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findStatisticPaymenByAngecyIdAndDate" resultType="org.songbai.loan.model.statistic.PayStatisticModel">
+        select * from loan_s_pay
+        <where>
+            pay_date=#{date}
+            <if test="agencyId!=null">
+                And agency_id=#{agencyId}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="po.startDate!=null">
+                And p.pay_date &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And p.pay_date &lt;= #{po.endDate}
+            </if>
+            <if test="po.agencyId!=null">
+                And p.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.isVest==1">
+                <if test="po.vestId!=null">
+                   and  p.vest_id=#{po.vestId}
+                </if>
+            </if>
+        </where>
+    </sql>
+</mapper>

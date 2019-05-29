@@ -1,0 +1,40 @@
+server:
+  port: 3004
+  context-path: /riskd
+  tomcat:
+    max-http-post-size: 5242880
+spring:
+  application:
+    name: loan-risk-data
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 100MB
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    metadata-map:
+      management:
+        port: ${management.port}
+        context-path: ${management.context-path}
+  client:
+    serviceUrl:
+      defaultZone: http://admin:Songbai2017@conf.loan.abc:3100/eureka/
+
+logging:
+  path: /stock/loan.logs/${spring.application.name}
+
+endpoints:
+  sensitive: false
+  enabled: true
+management:
+  port: 4004
+  context-path: /management

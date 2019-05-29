@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.AuthenticationDao">
+	<update id="updateAuthStatusAndAtomicMoneyById">
+		update loan_u_authentication
+		<set>
+			<if test="status != null">status = #{status},</if>
+			<if test="alipayStatus != null">alipay_status = #{alipayStatus}, alipay_time = now(),</if>
+			<if test="phoneStatus != null">phone_status = #{phoneStatus}, phone_time = now(),</if>
+			<if test="bankStatus != null">bank_status = #{bankStatus}, bank_time = now(),</if>
+			<if test="remainDays != null">remain_days = #{remainDays},</if>
+			<if test="money != null">money = money + #{money},</if>
+		</set>
+		where user_id = #{userId}
+	</update>
+	<select id="findUserAuthenticationByUserId" resultType="org.songbai.loan.model.user.AuthenticationModel">
+        select *
+        from loan_u_authentication
+        where user_id = #{userId}
+        limit 1
+    </select>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.order.dao.OrderOptDao">
+    <select id="findOwnerReviewList" resultType="org.songbai.loan.admin.order.vo.OrderOptVo">
+        select t.*,uo.guest from loan_u_order_opt t,loan_u_order uo
+        <where>
+            t.order_number = uo.order_number and t.agency_id = #{agencyId} and t.actor_id = #{actorId} and t.stage =2
+            <if test="date != null ">
+                AND t.create_time &gt;= #{date}
+            </if>
+        </where>
+    </select>
+    <select id="queryOrderOptCount" resultType="java.lang.Integer">
+        select count(1) from loan_u_order_opt t left join loan_u_user user on t.user_id = user.id
+        left join dream_a_actor actor on t.actor_id = actor.id
+        <include refid="base_where"/>
+    </select>
+    <select id="queryOrderOptPage" resultType="org.songbai.loan.admin.order.vo.OrderOptPageVo">
+        select user.third_id,user.name userName,user.phone userPhone,t.status,ua.agency_name ,t.agency_id,
+        t.status,actor.name reviewer,t.create_time reviewTime,t.remark,t.id,t.order_number,t.user_id
+        from loan_u_order_opt t left join loan_u_user user on t.user_id = user.id
+        left join dream_a_actor actor on t.actor_id = actor.id
+        left join dream_u_agency ua on ua.id = t.agency_id
+        <include refid="base_where"/>
+        order by t.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="queryAgencyGroupReviewOrder" resultType="java.util.Map">
+        select
+        IFNULL(sum(IF(t.stage = 1 and t.`status` = 2,1,0)),0) machineSuccCount,
+        IFNULL(sum(IF(t.stage = 1 and t.`status` = 3,1,0)),0) machineFailCount,
+        IFNULL(SUM(IF(t.stage = 2 and t.`status` = 2 ,1,0)),0) reviewSuccCount,
+        IFNULL(SUM(IF(t.stage = 2 and t.`status` = 3 ,1,0)),0) reviewFailCount
+        from loan_u_order_opt t
+        <where>
+            <if test="agencyId != null ">
+                AND t.agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+    <select id="getLastUpdateOpt" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt where order_number = #{orderNum} and user_id = #{userId} order by id desc limit 1
+    </select>
+    <select id="findOptLimitOne" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt where order_number = #{orderNum} and agency_id = #{agencyId}
+        <if test="stage != null ">
+            and stage = #{stage}
+        </if>
+        <if test="status != null ">
+            and status = #{status}
+        </if>
+        order by id desc limit 1
+    </select>
+    <select id="findOptListByOrderNumber" resultType="org.songbai.loan.model.loan.OrderOptModel">
+        select * from loan_u_order_opt
+        where order_number=#{orderNumber}
+        order by id
+    </select>
+
+    <sql id="base_where">
+        <where>
+            and user.deleted = 0
+            <if test="po.agencyId != null ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.userPhone != null">
+                AND user.phone like concat('%',#{po.userPhone},'%')
+            </if>
+            <if test="po.stage != null ">
+                AND t.stage = #{po.stage}
+            </if>
+            <if test="po.status != null ">
+                AND t.status = #{po.status}
+            </if>
+            <if test="po.startDate!=null">
+                And t.create_time &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And t.create_time &lt;= #{po.endDate}
+            </if>
+            <if test="po.reviewName != null ">
+                AND actor.name like concat('%',#{po.reviewName},'%')
+            </if>
+            <if test="po.reviewId != null ">
+                AND t.actor_id = #{po.reviewId}
+            </if>
+            <if test="po.userId != null ">
+                AND user.third_id = #{po.userId}
+            </if>
+        </where>
+    </sql>
+</mapper>

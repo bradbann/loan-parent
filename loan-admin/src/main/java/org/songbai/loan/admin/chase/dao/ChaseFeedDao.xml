@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.chase.dao.ChaseFeedDao">
+    <select id="queryFeedCount" resultType="java.lang.Integer">
+        select count(1) from loan_a_chase_feed t left join loan_u_user uu on t.user_id = uu.id
+        <include refid="base_where"/>
+    </select>
+    <select id="findChaseFeedList" resultType="org.songbai.loan.admin.chase.vo.ChaseFeedVo">
+        select t.*,
+        aa.name chaseActorName,
+        uu.phone userPhone,uu.name userName,
+        ad.name deptName,dic.name feedTypeName
+        from loan_a_chase_feed t left join loan_u_user uu on t.user_id = uu.id
+        left join dream_a_department ad on t.dept_id = ad.id
+        left join dream_a_actor aa on aa.id = t.actor_id
+        left join dream_a_dictionary dic on dic.type = 'chase_type' and dic.value = t.feed_type
+        <include refid="base_where"/>
+        order by t.id desc
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="findChaseListByChaseId" resultType="org.songbai.loan.admin.chase.vo.ChaseFeedVo">
+        select t.*,aa.name chaseActorName,dic.name feedTypeName
+        from loan_a_chase_feed t left join dream_a_actor aa on aa.id = t.actor_id
+        left join dream_a_dictionary dic on dic.type = 'chase_type' and dic.value = t.feed_type
+        where t.chase_id = #{chaseId}
+        <if test="agencyId != null ">
+            and t.agency_id = #{agencyId}
+        </if>
+        order by id desc
+    </select>
+
+    <sql id="base_where">
+        <where>
+            and uu.deleted = 0
+            <if test="po.agencyId != null ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.startChaseDate != null ">
+                AND t.create_time &gt;= #{po.startChaseDate}
+            </if>
+            <if test="po.endChaseDate != null ">
+                AND t.create_time &lt;= #{po.endChaseDate}
+            </if>
+            <if test="po.userPhone != null ">
+                AND uu.phone = #{po.userPhone}
+            </if>
+            <if test="po.orderNumber != null ">
+                AND t.order_number = #{po.orderNumber}
+            </if>
+            <if test="po.chaseId != null ">
+                AND t.chase_id = #{po.chaseId}
+            </if>
+            <if test="po.userId != null ">
+                AND uu.third_id = #{po.userId}
+            </if>
+            <if test="deptIds != null ">
+                AND t.dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+            <if test="po.deptId != null ">
+                and t.dept_id = #{po.deptId}
+            </if>
+            <if test="po.actorId != null ">
+                AND t.actor_id = #{po.actorId}
+            </if>
+        </where>
+    </sql>
+</mapper>

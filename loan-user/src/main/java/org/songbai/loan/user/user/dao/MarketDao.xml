@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.MarketDao">
+	<select id="selectMarketIdByKey" resultType="org.songbai.loan.model.version.MarketModel">
+        select * from loan_u_market where market_key=#{marketKey} limit 1
+    </select>
+</mapper>

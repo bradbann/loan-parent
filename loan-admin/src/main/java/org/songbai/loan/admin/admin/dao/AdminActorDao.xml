@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminActorDao">
+
+    <!-- ************************************User 部分********************************************************** -->
+    <insert id="createAdminUser" useGeneratedKeys="true"
+            keyProperty="id" parameterType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		insert into
+		dream_a_actor(name,
+		category, create_owner_id, description, user_account, password,
+		email,
+		disable, phone, salt, create_owner,data_id,role_type,resource_type,user_portrait,dept_id,is_manager,is_validate)
+		values
+		(#{name,jdbcType=VARCHAR},#{category,jdbcType=VARCHAR},
+		#{createOwnerId,jdbcType=INTEGER},#{description,jdbcType=VARCHAR},#{userAccount,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},#{disable,jdbcType=TINYINT},#{phone,jdbcType=VARCHAR},#{salt,jdbcType=VARCHAR},
+		#{createOwner,jdbcType=VARCHAR},#{dataId,jdbcType=INTEGER},#{roleType},#{resourceType},#{userPortrait},
+		#{deptId,jdbcType=INTEGER},#{isManager,jdbcType=INTEGER},#{isValidate,jdbcType=INTEGER})
+	</insert>
+
+    <update id="updateAdminUserExceptPassword" parameterType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        update dream_a_actor
+        <set>
+            <if test="name != null">name=#{name},</if>
+            <if test="description != null">description=#{description},</if>
+            <if test="email != null">email=#{email},</if>
+            <if test="disable != null">disable=#{disable},</if>
+            <if test="phone != null">phone=#{phone},</if>
+            <if test="lastLoginTime != null">last_login_time=#{lastLoginTime},</if>
+            <if test="passEncryptTimes != null">pass_encrypt_times=#{passEncryptTimes},</if>
+            <if test="accountLimitTime != null">account_limit_time=#{accountLimitTime},</if>
+            <if test="userPortrait != null">user_portrait=#{userPortrait},</if>
+            <if test="deptId != null">dept_id=#{deptId},</if>
+            <if test="isManager != null">is_manager=#{isManager},</if>
+            <if test="isValidate != null">is_validate=#{isValidate},</if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateAdminUserName" parameterType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        update dream_a_actor
+        <set>
+            <if test="name != null">name=#{name}</if>
+        </set>
+        where data_id=#{dataId} and user_account=#{userAccount}
+    </update>
+
+    <update id="updateAdminUserPassword">
+		update dream_a_actor set password = #{password} ,pass_encrypt_times=0 ,account_limit_time= 0 where id = #{id}
+	</update>
+    <!-- 普通查询 不会查询User的密码字段 -->
+    <select id="getAdminUser" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		select * from dream_a_actor where id=#{id}
+	</select>
+
+    <delete id="deletAdminUser">
+		delete from dream_a_actor
+		where id =#{id}
+		and data_id
+		=#{dataId}
+	</delete>
+
+    <select id="getUsersBy" resultType="org.songbai.loan.admin.admin.model.AdminActorModel">
+        select t.* ,dept.name as deptName
+        from dream_a_actor t left join dream_a_department dept on t.dept_id = dept.id
+        <where>
+            <if test="userAccount">
+                AND t.user_account like  concat('%',#{userAccount},'%')
+            </if>
+            <if test="name">
+                AND t.name like   concat('%',#{name},'%')
+            </if>
+            <if test="email">
+                AND t.email like  concat('%',#{email},'%')
+            </if>
+            <if test="disable">
+                AND t.disable = #{disable}
+            </if>
+            <if test="phone">
+                AND t.phone like  concat('%',#{phone},'%')
+            </if>
+            <if test="category">
+                AND t.category = #{category}
+            </if>
+            <if test="dataId !=null">
+                AND t.data_id = #{dataId}
+            </if>
+            <if test="deptIds != null ">
+                AND dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="getUserBy_count" resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_actor
+        <where>
+            <if test="userAccount">
+                AND user_account like  concat('%',#{userAccount},'%')
+            </if>
+            <if test="name!=null">
+                AND name like   concat('%',#{name},'%')
+            </if>
+            <if test="email">
+                AND email like  concat('%',#{email},'%')
+            </if>
+            <if test="disable">
+                AND disable = #{disable}
+            </if>
+            <if test="phone">
+                AND phone like  concat('%',#{phone},'%')
+            </if>
+            <if test="category">
+                AND category = #{category}
+            </if>
+            <if test="dataId !=null">
+                AND data_id = #{dataId}
+            </if>
+            <if test="deptIds != null ">
+                AND dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserByUserAccountPassword" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        select * from dream_a_actor
+        <where>
+            <if test="userAccount != null ">and user_account = #{userAccount}</if>
+            <if test="password != null ">and password = #{password}</if>
+            <if test="dataId != null ">and data_id = #{dataId}</if>
+            <if test="agencyCode != null">and agency_code = #{agencyCode}</if>
+        </where>
+        limit 1
+    </select>
+
+    <select id="getUsersAll" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		select
+		id, name, category,
+		create_owner_id, description, user_account, email,
+		disable,
+		phone,data_id
+		salt, password,dept_id
+		from dream_a_actor
+		where id=#{id}
+	</select>
+
+    <update id="disbaleOrActivationUser">
+        update dream_a_actor set disable = #{disable} where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <insert id="addDepartmentActor">
+		insert into dream_a_department_actor
+		(department_id,
+		actor_id)
+		values (#{departmentId, jdbcType=INTEGER}, #{actorId,
+		jdbcType=INTEGER})
+	</insert>
+
+    <delete id="deleteDepartmentActor">
+		delete from dream_a_department_actor
+		where actor_id =
+		#{actorId}
+	</delete>
+
+    <select id="pagingqueryByDepartmentId" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		select
+		da.id,
+		da.name, da.category, da.create_owner_id, da.description,
+		da.user_account, da.email, da.disable, da.phone, da.salt
+		from
+		dream_a_actor da
+		INNER JOIN dream_a_department_actor dda
+		ON da.id =
+		dda.actor_id
+		where dda.department_id = #{departmentId}
+		limit
+		#{limit},#{size}
+	</select>
+
+    <select id="pagingqueryByDepartmentId_count" resultType="java.lang.Integer">
+		select
+		count(da.id)
+		from dream_a_actor da
+		INNER JOIN dream_a_department_actor
+		dda
+		ON da.id = dda.actor_id
+		where dda.department_id = #{departmentId}
+	</select>
+
+    <!-- 批量删除部门和用户关系纪录 -->
+    <delete id="deleteUserRelation">
+        delete from dream_a_department_actor
+        where department_id =
+        #{departmentId}
+        and actor_id in
+        <foreach collection="userIds" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="pagingqueryNotRelationUsers" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		select
+		da.id, da.name, da.category, da.create_owner_id, da.description,
+		da.user_account, da.email, da.disable, da.phone, da.salt
+		from
+		dream_a_actor da
+		where da.id not in
+		(select a.id from dream_a_actor a
+		INNER JOIN dream_a_department_actor dda
+		ON a.id = dda.actor_id
+		)
+		and
+		da.data_id = #{dataId}
+		limit
+		#{limit}, #{size}
+	</select>
+
+    <select id="pagingqueryNotRelationUsers_count" resultType="java.lang.Integer">
+		select count(da.id)
+		from dream_a_actor da
+		where da.id not in
+		(select a.id
+		from dream_a_actor a
+		INNER JOIN dream_a_department_actor dda
+		ON a.id =
+		dda.actor_id
+		)
+		and data_id = #{dataId}
+	</select>
+
+    <select id="pageQueryActorByRoleId" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        select da.id,
+        da.name, da.category, da.create_owner_id, da.description,
+        da.user_account, da.email, da.disable, da.phone
+        from dream_a_actor da
+        INNER JOIN dream_a_authorization aa
+        ON da.id= aa.actor_id
+        <where>
+            <if test="roleId !=null">AND aa.authority_id= #{roleId}</if>
+            <if test="dataId!=null">AND aa.data_id = #{dataId}</if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pageQueryActorByRoleId_count" resultType="java.lang.Integer">
+        select count(da.id)
+        from dream_a_actor da
+        INNER JOIN
+        dream_a_authorization aa
+        ON da.id= aa.actor_id
+        <where>
+            <if test="roleId !=null">AND aa.authority_id= #{roleId}</if>
+            <if test="dataId!=null">AND aa.data_id = #{dataId}</if>
+        </where>
+    </select>
+
+    <select id="pageQueryAdminActorByRoleId" resultType="org.songbai.loan.admin.admin.model.AdminActorModel">
+        select da.id,
+        da.name, da.category, da.create_owner_id, da.description,
+        da.user_account, da.email, da.disable, da.phone
+        from dream_a_actor da
+        INNER JOIN dream_a_authorization aa
+        ON da.id= aa.actor_id
+        <where>
+            <if test="roleId !=null">AND aa.authority_id= #{roleId}</if>
+            <if test="dataId!=null">AND aa.data_id = #{dataId}</if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pageQueryAdminActorByRoleId_count" resultType="java.lang.Integer">
+        select count(da.id)
+        from dream_a_actor da
+        INNER JOIN
+        dream_a_authorization aa
+        ON da.id= aa.actor_id
+        <where>
+            <if test="roleId !=null">AND aa.authority_id= #{roleId}</if>
+            <if test="dataId!=null">AND aa.data_id = #{dataId}</if>
+        </where>
+    </select>
+
+    <delete id="deleteUserInRole">
+        delete from dream_a_authorization
+        <where>
+            <if test="roleId !=null">AND authority_id= #{roleId}</if>
+            <if test="actorId !=null">AND actor_id =#{actorId}</if>
+            <if test="dataId!=null">AND data_id = #{dataId}</if>
+        </where>
+    </delete>
+
+    <select id="getChannelLevelByDomain" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select level from dream_u_channel where backstage_domain=#{domain} and status=1
+	</select>
+    <select id="queryDefaultAgencyAuthority"
+            resultType="org.songbai.loan.admin.admin.model.AdminAuthorityModel">
+		select id,`name`,category from dream_a_authority where is_admin=2 limit 1
+	</select>
+
+    <select id="getDeptManagerCountByDeptId" resultType="java.lang.Integer">
+        select count(1) from dream_a_actor where dept_id = #{deptId} and is_manager = 1
+    </select>
+    <select id="getDeptManagerByDeptId" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        select * from dream_a_actor where dept_id = #{deptId} and is_manager = 1
+    </select>
+    <select id="findUserListByDeptIds" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        select * from dream_a_actor
+        <where>
+            <if test="deptIds != null ">
+                AND dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                                     separator="," close=")">
+                #{deptId}
+            </foreach>
+            </if>
+            <if test="dataId != null ">
+                AND data_id = #{dataId}
+            </if>
+        </where>
+    </select>
+    <select id="getAdminUserByAgencyId" resultType="org.songbai.loan.admin.admin.model.AdminUserModel">
+        select * from dream_a_actor where data_id = #{agencyId} and role_type = 1
+    </select>
+
+    <!-- 用户设置消息不再提醒，与用户关连 -->
+    <update id="userClosePopsRemind">
+		update dream_a_actor set remind_type = 1 where id=#{id}
+	</update>
+
+    <update id="resetAgencyPassword" parameterType="org.songbai.loan.admin.admin.model.AdminUserModel">
+		update dream_a_actor set password = #{password} where data_id=#{dataId}
+	</update>
+    <update id="updateUserDeptById">
+		update dream_a_actor set dept_id =#{deptId},is_manager = #{isManager} where id =#{actorId}
+	</update>
+
+    <insert id="createAuthorization">
+		insert into dream_a_authorization(actor_id,authority_id,data_id)
+		values(#{actorId},#{authorityId},#{dataId})
+	</insert>
+</mapper>

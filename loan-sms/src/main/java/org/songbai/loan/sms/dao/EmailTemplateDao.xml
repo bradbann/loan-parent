@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.sms.dao.EmailTemplateDao">
+
+    <select id="getEmailTemplateModel" resultType="org.songbai.loan.model.sms.EmailTemplateModel">
+
+        select *
+          from dream_m_email_template
+         where type = #{type}
+           and tele_code = #{teleCode}
+           and agency_code = #{agencyCode}
+           and deleted = 0
+
+    </select>
+</mapper>

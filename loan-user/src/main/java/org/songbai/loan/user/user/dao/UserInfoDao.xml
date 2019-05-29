@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.user.user.dao.UserInfoDao">
+	<select id="getAddressList" resultType="org.songbai.loan.user.user.model.vo.AreaVo">
+		select id,c_name as name,p_id from loan_u_area
+	</select>
+	<select id="getUserInfoByIdCardNum" resultType="org.songbai.loan.model.user.UserInfoModel">
+		select i.* from loan_u_user_info i
+        left join loan_u_user u on u.id=i.user_id
+        where i.idcard_num = #{idCardNum} and i.deleted = 0 and i.agency_id = #{agencyId} and u.vest_id = #{vestId} limit 1
+	</select>
+</mapper>

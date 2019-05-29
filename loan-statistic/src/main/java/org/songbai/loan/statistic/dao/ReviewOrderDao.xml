@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.ReviewOrderDao">
+    <update id="updateReviewOrder">
+        update loan_s_review
+        <set>
+            <if test="model.orderCount != null ">order_count = order_count +1,</if>
+            <if test="model.orderNewCount != null ">order_new_count = order_new_count +1,</if>
+            <if test="model.orderOldCount != null ">order_old_count = order_old_count +1,</if>
+            <if test="model.orderWaitCount != null ">order_wait_count = order_wait_count + #{model.orderWaitCount},</if>
+            <if test="model.reviewNewSuccCount !=  null ">
+                review_new_succ_count = review_new_succ_count + #{model.reviewNewSuccCount},
+            </if>
+            <if test="model.reviewOldSuccCount != null ">
+                review_old_succ_count = review_old_succ_count + #{model.reviewOldSuccCount},
+            </if>
+            <if test="model.reviewNewFailCount != null ">review_new_fail_count = review_new_fail_count + 1,</if>
+            <if test="model.reviewOldFailCount != null ">review_old_fail_count = review_old_fail_count + 1,</if>
+            <if test="model.expireNewCount != null ">expire_new_count = expire_new_count + 1,</if>
+            <if test="model.expireOldCount != null ">expire_old_count = expire_old_count + 1,</if>
+            <if test="model.machineNewSuccCount != null ">machine_new_succ_count = machine_new_succ_count + 1,</if>
+            <if test="model.machineOldSuccCount != null ">machine_old_succ_count = machine_old_succ_count + 1,</if>
+            <if test="model.machineNewFailCount != null ">
+                machine_new_fail_count = machine_new_fail_count + #{model.machineNewFailCount},
+            </if>
+            <if test="model.machineOldFailCount != null ">
+                machine_old_fail_count = machine_old_fail_count + #{model.machineOldFailCount},
+            </if>
+            <if test="model.machineToTransNewCount != null ">
+                machine_to_trans_new_count = machine_to_trans_new_count + #{model.machineToTransNewCount},
+            </if>
+            <if test="model.machineToTransOldCount != null ">
+                machine_to_trans_old_count = machine_to_trans_old_count + #{model.machineToTransOldCount},
+            </if>
+            <if test="model.firstOverdueNewCount != null ">
+                first_overdue_new_count = first_overdue_new_count + #{model.firstOverdueNewCount},
+            </if>
+            <if test="model.firstOverdueOldCount != null ">
+                first_overdue_old_count = first_overdue_old_count + #{model.firstOverdueOldCount},
+            </if>
+            <if test="model.inOverdueNewCount != null ">
+                in_overdue_new_count = in_overdue_new_count + #{model.inOverdueNewCount} ,
+            </if>
+            <if test="model.inOverdueOldCount != null ">
+                in_overdue_old_count = in_overdue_old_count + #{model.inOverdueOldCount} ,
+            </if>
+        </set>
+        where id = #{model.id}
+    </update>
+
+    <select id="getInfoBy" resultType="org.songbai.loan.model.statistic.ReviewOrderModel">
+        select * from loan_s_review
+        where agency_id = #{agencyId} and calc_date = #{calcDate}
+        and vest_id = #{vestId}
+        and channel_code = #{channelCode}
+        and product_id = #{productId}
+        and product_group_id = #{productGroupId}
+    </select>
+</mapper>

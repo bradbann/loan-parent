@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.config.dao.TaskTypeDao">
+
+    <insert id="creatTaskType" useGeneratedKeys="true" keyProperty="id" parameterType="org.songbai.loan.admin.config.model.TaskTypeModel">
+		insert into
+		dream_a_task_type(task_type, task_name, remark)
+		values
+		(#{taskType,jdbcType=VARCHAR},#{taskName,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR})
+	</insert>
+
+    <select id="getAll" resultType="org.songbai.loan.admin.config.model.TaskTypeModel">
+		select
+		id, task_type, task_name, remark
+		from dream_a_task_type
+	</select>
+
+    <select id="getBy" resultType="org.songbai.loan.admin.config.model.TaskTypeModel">
+        select
+        id, task_type, task_name, remark
+        from dream_a_task_type
+
+        <where>
+            <if test="taskType != null">
+                AND task_type = #{taskType}
+            </if>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <delete id="deleteByIds">
+        delete from dream_a_task_type
+        where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="querypaging" resultType="org.songbai.loan.admin.config.model.TaskTypeModel">
+		select
+		id, task_type, task_name, remark
+		from dream_a_task_type
+		limit #{limit}, #{size}
+	</select>
+
+    <select id="querypaging_count" resultType="integer">
+		select count(id)
+		from dream_a_task_type
+
+	</select>
+
+    <select id="findCountTaskTypeByTaskType" parameterType="string" resultType="org.songbai.loan.admin.config.model.TaskTypeModel">
+		select id
+		from dream_a_task_type
+		WHERE task_type=#{_parameter}
+          limit 1
+	</select>
+
+
+</mapper>

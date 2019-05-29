@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.statistic.dao.ReviewOrderDao">
+
+    <select id="getActorStatisCount" resultType="java.lang.Integer">
+        select count(1) from (
+        <include refid="actor_select_sql"/>
+        ) gg
+    </select>
+
+    <select id="findActorStatisGroupList" resultType="org.songbai.loan.admin.statistic.model.vo.ActorReviewVo">
+        <include refid="actor_select_sql"/>
+        <include refid="actor_orderBy_sql"/>
+        limit #{po.limit},#{po.pageSize}
+    </select>
+
+    <sql id="actor_select_sql">
+        select t.agency_id,t.actor_id,
+        <if test="po.isVest == 1 ">t.vest_id,</if>
+        <if test="po.isTotal == 0 ">t.calc_date,</if>
+        sum(t.review_count) reviewCount,
+        sum(t.review_new_succ_count) reviewNewSuccCount,
+        sum(t.review_old_succ_count) reviewOldSuccCount,
+        sum(t.review_new_fail_count) reviewNewFailCount,
+        sum(t.review_old_fail_count) reviewOldFailCount,
+        sum(t.first_overdue_new_count) firstOverdueNewCount,
+        sum(t.first_overdue_old_count) firstOverdueOldCount,
+        sum(t.in_overdue_new_count) inOverdueNewCount,
+        sum(t.in_overdue_old_count) inOverdueOldCount,
+        sum(t.expire_new_count) expire_new_count,
+        sum(t.expire_old_count) expire_old_count,
+        aa.NAME actorName
+        from loan_s_actor_review t left join dream_a_actor aa on t.actor_id = aa.id
+        <include refid="base_where"/>
+        group by t.agency_id,t.actor_id
+        <if test="po.isTotal == 0 ">,t.calc_date</if>
+        <if test="po.isVest == 1 ">,t.vest_id</if>
+    </sql>
+    <sql id="actor_orderBy_sql">
+        order by
+        <if test="po.isTotal == 0 ">t.calc_date desc,</if>
+        <if test="po.isVest == 1 ">t.vest_id,</if>
+        t.agency_id,t.actor_id
+    </sql>
+
+    <select id="getAgencyReviewCount" resultType="java.lang.Integer">
+        select count(1) from (
+        <include refid="review_select_sql"/>
+        ) gg
+    </select>
+
+
+    <select id="findReviewGroupList" resultType="org.songbai.loan.admin.statistic.model.vo.OrderReviewVo">
+        <include refid="review_select_sql"/>
+        <include refid="review_orderBy_sql"/>
+        limit #{po.limit},#{po.pageSize}
+    </select>
+    <select id="queryOrderTotalSum" resultType="java.util.Map">
+        SELECT
+            IFNULL( sum( t.order_count ), 0 ) orderCount,
+            IFNULL( sum( t.order_wait_count ), 0 ) waitCount,
+            IFNULL( sum( t.machine_new_succ_count + t.machine_old_succ_count ), 0 ) machineSuccCount,
+            IFNULL( sum( t.machine_new_fail_count + t.machine_old_fail_count ), 0 ) machineFailCount,
+            IFNULL( sum( t.review_new_succ_count + t.review_old_succ_count ), 0 ) reviewSuccCount,
+            IFNULL( sum( t.review_new_fail_count + t.review_old_fail_count ), 0 ) reviewFailCount
+        FROM  loan_s_review t
+        <where>
+            <if test="agencyId != null ">
+                and t.agency_id = #{agencyId}
+            </if>
+        </where>
+    </select>
+
+    <sql id="review_select_sql">
+        SELECT
+        t.agency_id,
+        <if test="po.isTotal == 0 ">t.calc_date,</if>
+        <if test="po.isVest == 1">t.vest_id,</if>
+        <if test="po.isChannelOrder == 1">t.channel_code,</if>
+        <if test="po.isProduct == 1">t.product_id,t.product_group_id,</if>
+        sum( t.order_count ) order_count,
+        sum( t.order_new_count ) order_new_count,
+        sum( t.order_old_count ) order_old_count,
+        sum( t.order_wait_count ) order_wait_count,
+        sum( t.review_new_succ_count ) reviewNewSuccCount,
+        sum( t.review_old_succ_count ) reviewOldSuccCount,
+        sum( t.review_new_fail_count ) reviewNewFailCount,
+        sum( t.review_old_fail_count ) reviewOldFailCount,
+        sum( t.expire_new_count ) expire_new_count,
+        sum( t.expire_old_count ) expire_old_count,
+        sum( t.machine_new_succ_count ) machine_new_succ_count,
+        sum( t.machine_old_succ_count ) machine_old_succ_count,
+        sum( t.machine_new_fail_count ) machine_new_fail_count,
+        sum( t.machine_old_fail_count ) machine_old_fail_count,
+        sum( t.machine_to_trans_old_count ) machine_to_trans_old_count,
+        sum( t.machine_to_trans_new_count ) machine_to_trans_new_count,
+        sum( t.first_overdue_new_count ) firstOverdueNewCount,
+        sum( t.first_overdue_old_count ) firstOverdueOldCount,
+        sum( t.in_overdue_new_count ) inOverdueNewCount,
+        sum( t.in_overdue_old_count ) inOverdueOldCount
+        FROM loan_s_review t
+        <include refid="base_where"/>
+        group by t.agency_id
+        <if test="po.isTotal == 0 ">,t.calc_date</if>
+        <if test="po.isVest == 1">,t.vest_id</if>
+        <if test="po.isChannelOrder == 1">,t.channel_code</if>
+        <if test="po.isProduct == 1">,t.product_id,t.product_group_id</if>
+    </sql>
+
+    <sql id="review_orderBy_sql">
+        order by
+        <if test="po.isTotal == 0 ">t.calc_date desc,</if>
+        t.agency_id
+        <if test="po.isChannelOrder == 1">,t.channel_code</if>
+        <if test="po.isVest == 1">,t.vest_id</if>
+        <if test="po.isProduct == 1">,t.product_id,t.product_group_id</if>
+    </sql>
+
+    <sql id="base_where">
+        <where>
+            <if test="po.agencyId != null ">
+                AND t.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.startCalcDate != null ">
+                AND t.calc_date &gt;= #{po.startCalcDate}
+            </if>
+            <if test="po.endCalcDate != null ">
+                AND t.calc_date &lt;= #{po.endCalcDate}
+            </if>
+            <if test="po.actorId != null ">
+                AND t.actor_id = #{po.actorId}
+            </if>
+            <if test="po.vestId != null ">
+                AND t.vest_id = #{po.vestId}
+            </if>
+            <if test="po.channelCode != null ">
+                and t.channel_code = #{po.channelCode}
+            </if>
+            <if test="po.productId != null ">
+                and t.product_id = #{po.productId}
+            </if>
+            <if test="po.productGroupId != null ">
+                and t.product_group_id = #{po.productGroupId}
+            </if>
+        </where>
+    </sql>
+
+
+</mapper>

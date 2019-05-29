@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.product.dao.ProductDao">
+
+    <select id="findProductList" resultType="org.songbai.loan.admin.product.model.ProductModelVO">
+        select p.*,g.name as groupName,d.agency_name
+        from loan_u_product p
+        left join loan_u_product_group g on g.id=p.group_id
+        left join dream_u_agency d on p.agency_id = d.id
+        <where>
+            p.deleted=0
+            <if test="status !=null">
+                and p.status=#{status}
+            </if>
+            <if test="agencyId !=null">
+                and p.agency_id=#{agencyId}
+            </if>
+        </where>
+        order by sorted asc,id desc
+    </select>
+    <select id="findStartProductBy" resultType="java.lang.Integer">
+        select count(1) from loan_u_product where  deleted=0 and status=1 and group_id=#{groupId}
+    </select>
+    <select id="findProductSelected" resultType="org.songbai.loan.admin.product.model.ProductModelVO">
+        select id,name  from loan_u_product
+        <where>
+            and deleted=0
+            <if test="agencyId !=null">
+               and agency_id=#{agencyId}
+            </if>
+        </where>
+    </select>
+</mapper>

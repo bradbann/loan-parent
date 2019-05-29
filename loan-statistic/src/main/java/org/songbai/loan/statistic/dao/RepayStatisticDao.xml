@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.RepayStatisticDao">
+    <insert id="insertRepayStatisticByAgencyIdAndPayDate">
+        insert  into loan_s_repay
+                (agency_id, vest_id,repay_date,order_count,repay_amount,pay_amount,left_amount)
+        VALUES
+               (#{agencyId},#{vestId},#{repayDate},1,#{loan},#{pay},#{loan})
+    </insert>
+    <update id="updateRepayStatisticByAgencyIdAndPayDate">
+        update loan_s_repay
+        <set>
+            order_count=order_count+1,
+            repay_amount=repay_amount+#{loan},
+            pay_amount=pay_amount+#{pay},
+            left_amount=left_amount+#{loan}
+        </set>
+        where agency_id=#{agencyId} and repay_date=#{repayDate} and vest_id=#{vestId}
+    </update>
+
+    <update id="updateRepayStatistic">
+        update loan_s_repay
+        <set>
+            <if test="repayMoney>0">
+                left_amount=left_amount-#{repayMoney},
+                real_repay_amount=real_repay_amount+#{repayMoney},
+            </if>
+            <if test="deductMoney>0">
+                deduct_amount=deduct_amount+#{deductMoney},
+                left_amount=left_amount-#{deductMoney},
+                repay_amount=repay_amount-#{deductMoney},
+            </if>
+            <if test="isFinish==1">
+                <if test="isEarly==1">
+                    early_count=early_count+1,
+               </if>
+                <if test="isNormal==1">
+                    normal_count=normal_count+1,
+                </if>
+                <if test="isOverdue==1">
+                    overdue_repay_count=overdue_repay_count+1,
+                    overdue_pay_count=overdue_pay_count-1,
+                </if>
+                <if test="isOneOverdue==1">
+                    chase_one_count=chase_one_count+1,
+                </if>
+                <if test="isThreeOverdue==1">
+                    chase_three_count=chase_three_count+1,
+                </if>
+                <if test="isSevenOverdue==1">
+                    chase_seven_count=chase_seven_count+1,
+                </if>
+                <if test="isFifteenOverdue==1">
+                    chase_fifteen_count=chase_fifteen_count+1,
+                </if>
+            </if>
+
+            <if test="isOnOverdue==1">
+                <if test="isOnFirstOverdue==1">
+                    overdue_pay_count=overdue_pay_count+1,
+                    first_overdue_count=first_overdue_count+1,
+                </if>
+                <if test="overdueMoney>0">
+                    exceed_amount=exceed_amount+#{overdueMoney},
+                    repay_amount=repay_amount+#{overdueMoney},
+                    left_amount=left_amount+#{overdueMoney},
+                </if>
+            </if>
+            <if test="isFail==1">
+                repay_fail_count=repay_fail_count+1,
+                overdue_pay_count=overdue_pay_count-1,
+            </if>
+
+        </set>
+        where agency_id=#{agencyId} and repay_date=#{repayDate} and vest_id=#{vestId}
+    </update>
+
+
+    <select id="findRepayStatisticByRepayDateAndAgencyId" resultType="org.songbai.loan.model.statistic.RepayStatisticModel">
+        select * from loan_s_repay where agency_id=#{agencyId} and repay_date=#{repayDate} limit  1
+    </select>
+    <select id="selectt" resultType="org.songbai.loan.model.statistic.RepayStatisticModel">
+        select  * from loan_s_repay
+        where agency_id=#{agencyId} and repay_date=#{repayDate}
+    </select>
+</mapper>

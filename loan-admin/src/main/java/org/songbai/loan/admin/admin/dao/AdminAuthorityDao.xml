@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.admin.dao.AdminAuthorityDao">
+
+    <!-- 批量删除 -->
+    <delete id="deleteAuthoritysByIds">
+        delete from dream_a_authority where id in
+        <foreach collection="ids" item="id" index="index" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <insert id="createPermission" parameterType="org.songbai.loan.admin.admin.model.AdminPerssionModel"
+            useGeneratedKeys="true" keyProperty="id">
+		insert into
+		dream_a_authority
+		(name, description, category, identifier)
+		values (#{name,
+		jdbcType=VARCHAR},
+		#{description, jdbcType=VARCHAR}, #{category,
+		jdbcType=VARCHAR},
+		#{identifier, jdbcType=VARCHAR})
+	</insert>
+
+    <update id="updatePermission" parameterType="org.songbai.loan.admin.admin.model.AdminPerssionModel">
+        update dream_a_authority
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="identifier != null">identifier = #{identifier},</if>
+        </set>
+        where id = #{id}
+    </update>
+    <select id="pagingQueryPermissions" parameterType="java.util.HashMap"
+            resultType="org.songbai.loan.admin.admin.model.AdminPerssionModel">
+        select id, name, description, category, create_id, create_date,
+        identifier, level_code
+        from dream_a_authority
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="description != null">
+                and description like #{description}
+            </if>
+            <if test="identifier != null">
+                and identifier like #{identifier}
+            </if>
+            <if test="levelCode != null">
+                and level_code like #{levelCode}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryPermissions_count" parameterType="java.util.HashMap"
+            resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_authority
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="description != null">
+                and description like #{description}
+            </if>
+            <if test="identifier != null">
+                and identifier like #{identifier}
+            </if>
+            <if test="levelCode != null">
+                and level_code like #{levelCode}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+        </where>
+    </select>
+
+    <select id="pagingQueryNotGrantPsemissionByActorId"
+            resultType="org.songbai.loan.admin.admin.model.AdminPerssionModel">
+        SELECT a.id, a.name, a.description, a.category, a.create_date,
+        a.identifier, a.level_code
+        FROM dream_a_authority a
+        where a.id not in
+        (SELECT s.id FROM dream_a_authority s
+        INNER JOIN dream_a_authorization
+        da
+        ON s.id = da.authority_id
+        WHERE da.actor_id = #{actorId})
+        <if test="category != null">
+            and a.category = #{category}
+        </if>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingQueryNotGrantPsemissionByActorId_count"
+            resultType="java.lang.Integer">
+        select count(a.id)
+        FROM dream_a_authority a
+        where a.id not in (SELECT
+        s.id FROM dream_a_authority s
+        INNER JOIN dream_a_authorization da
+        ON
+        s.id = da.authority_id
+        WHERE da.actor_id = #{actorId})
+        <if test="category != null">
+            and a.category = #{category}
+        </if>
+    </select>
+
+    <select id="pagingQueryGrantPsemissionsByActorId"
+            resultType="org.songbai.loan.admin.admin.model.AdminPerssionModel">
+        select a.id, a.name, a.description, a.category, a.create_date,
+        a.identifier, a.level_code
+        from dream_a_authority a
+        INNER JOIN
+        dream_a_authorization da
+        ON a.id = da.authority_id
+        <where>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="category != null">
+                and a.category = #{category}
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingQueryGrantPsemissionsByActorId_count"
+            resultType="java.lang.Integer">
+        select count(a.id)
+        from dream_a_authority a
+        INNER JOIN
+        dream_a_authorization da
+        ON a.id = da.authority_id
+        <where>
+            <if test="actorId != null">
+                da.actor_id = #{actorId}
+            </if>
+            <if test="category != null">
+                and a.category = #{category}
+            </if>
+        </where>
+    </select>
+    <!-- ************************角色相关SQL开始****************************** -->
+
+    <insert id="createAdminRole" useGeneratedKeys="true"
+            keyProperty="id" parameterType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+		insert into
+		dream_a_authority
+		(name,
+		description,
+		category, data_id, is_admin,create_id,dept_id)
+		values (#{name,
+		jdbcType=VARCHAR},
+		#{description,
+		jdbcType=VARCHAR}, #{category,
+		jdbcType=VARCHAR}, #{dataId, jdbcType=INTEGER}, #{isAdmin,
+		jdbcType=TINYINT},#{createId,jdbcType=INTEGER},#{deptId,jdbcType=INTEGER})
+	</insert>
+    <update id="updateAdminRole" parameterType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        update dream_a_authority
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="description != null">description = #{description},</if>
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteAdminRole" parameterType="integer"><!-- 删除操作为完全处理，后完善(删除当前角色的相关权限数据) -->
+		delete from dream_a_authority where id=#{0}
+	</delete>
+    <select id="getRole" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+		select * from dream_a_authority
+		where id = #{0}
+	</select>
+
+    <select id="pagingQueryRole" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select id, name, description, category, create_id, create_date
+        ,data_id,is_admin
+        from
+        dream_a_authority
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="description != null">
+                and description like #{description}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+            <if test="dataId != null">
+                and data_id = #{dataId}
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+    <select id="pagingQueryRole_count" resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_authority
+        <where>
+            <if test="name != null">
+                and name like #{name}
+            </if>
+            <if test="description != null">
+                and description like #{description}
+            </if>
+            <if test="category != null">
+                and category = #{category}
+            </if>
+            <if test="dataId != null">
+                and data_id = #{dataId}
+            </if>
+        </where>
+    </select>
+
+    <select id="pagingQueryGrantRolesByUserId" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select a.id, a.name, a.description, a.category, a.create_id, a.create_date
+        from dream_a_authority a INNER JOIN dream_a_authorization da ON a.id = da.authority_id
+        <where>
+            a.id !=1
+            <if test="name != null">
+                and a.name = #{name}
+            </if>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="category != null">
+                and a.category = #{category}
+            </if>
+            <if test="dataId != null">
+                and a.data_id = #{dataId}
+            </if>
+            <if test="deptIds != null ">
+                AND a.dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingQueryGrantRolesByUserId_count" resultType="java.lang.Integer">
+        select count(a.id)
+        from dream_a_authority a INNER JOIN dream_a_authorization da ON a.id = da.authority_id
+        <where>
+            a.id !=1
+            <if test="name != null">
+                and a.name = #{name}
+            </if>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="category != null">
+                and a.category = #{category}
+            </if>
+            <if test="dataId != null">
+                and a.data_id = #{dataId}
+            </if>
+            <if test="deptIds != null ">
+                AND a.dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="pagingQueryNotGrantRolesByUserId" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select a.id, a.name, a.description, a.category, a.create_id, a.create_date
+        from dream_a_authority a
+        where not EXISTS (select 1 from dream_a_authorization da where da.authority_id = a.id and da.actor_id =
+        #{actorId})
+        and a.id != 1
+        <if test="name != null">
+            and a.name = #{name}
+        </if>
+        <if test="category != null">
+            and a.category = #{category}
+        </if>
+        <if test="dataId != null">
+            and a.data_id = #{dataId}
+        </if>
+        <if test="deptIds != null ">
+            AND a.dept_id in
+            <foreach collection="deptIds" item="deptId" index="index" open="("
+                     separator="," close=")">
+                #{deptId}
+            </foreach>
+        </if>
+        limit #{limit}, #{size}
+    </select>
+
+    <select id="pagingQueryNotGrantRolesByUserId_count" resultType="java.lang.Integer">
+        select count(a.id) from dream_a_authority a
+        where not EXISTS (select 1 from dream_a_authorization da where da.authority_id = a.id and da.actor_id =
+        #{actorId})
+        and a.id != 1
+        <if test="name != null">
+            and a.name = #{name}
+        </if>
+        <if test="category != null">
+            and a.category = #{category}
+        </if>
+        <if test="dataId != null">
+            and a.data_id = #{dataId}
+        </if>
+        <if test="deptIds != null ">
+            AND a.dept_id in
+            <foreach collection="deptIds" item="deptId" index="index" open="("
+                     separator="," close=")">
+                #{deptId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryGrantRolesByUserId" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select a.id, a.name, a.description, a.category, a.create_id,
+        a.create_date,a.is_admin
+        from dream_a_authority a
+        INNER JOIN
+        dream_a_authorization
+        da
+        ON a.id = da.authority_id
+        <where>
+            <if test="actorId != null">
+                and da.actor_id = #{actorId}
+            </if>
+            <if test="category != null">
+                and a.category = #{category}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="pagingQueryRolesByIsAdmin" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select id, name, description, category, create_id,
+        create_date,data_id,is_Admin
+        from dream_a_authority t
+        <include refid="role_base_where"/>
+        order by t.id desc
+        limit #{limit}, #{pageSize}
+    </select>
+
+    <select id="pagingQueryRolesByIsAdmin_count" resultType="java.lang.Integer">
+        select count(id)
+        from dream_a_authority t
+        <include refid="role_base_where"/>
+    </select>
+
+    <sql id="role_base_where">
+        <where> t.id != 0
+            <if test="userModel.dataId !=null">
+                and t.data_id = #{userModel.dataId}
+            </if>
+            <if test="deptIds != null ">
+                AND t.dept_id in
+                <foreach collection="deptIds" item="deptId" index="index" open="("
+                         separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <select id="findRoles" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+		select id, name, description, category, create_id,
+		create_date,data_id,is_Admin
+		from dream_a_authority where type =1 and data_Id=#{dataId}
+	</select>
+    <select id="queryGrantRolesByDeptId" resultType="org.songbai.loan.admin.admin.model.AdminRoleModel">
+        select a.id, a.name, a.description, a.category, a.create_id,
+        a.create_date,a.is_admin
+        from dream_a_authority a
+        INNER JOIN
+        dream_a_authorization
+        da
+        ON a.id = da.authority_id
+        <where>
+            <if test="deptId != null">
+                and da.dept_id = #{deptId}
+            </if>
+
+        </where>
+    </select>
+</mapper>

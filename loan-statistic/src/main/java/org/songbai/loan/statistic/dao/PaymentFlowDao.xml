@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.PaymentFlowDao">
+
+
+
+    <select id="findAgencyPaymentStatisticByYesterday" resultType="org.songbai.loan.model.statistic.PayStatisticModel">
+        select count(1) as payCount,sum(loan) loanAmount, sum(money) as payAmount,sum(stamp_tax) as stampTaxAmount
+        from loan_a_payment_flow f
+        <where>
+            <if test="agencyId != null ">
+                and f.agency_id = #{agencyId}
+            </if>
+
+            <if test="yesterday!=null">
+                and f.payment_time &gt;= #{yesterday} and f.payment_time &lt;= #{yesterday}
+            </if>
+        </where>
+    </select>
+    <select id="findAgencyPaymentStatisticLoanByYesterday" resultType="org.songbai.loan.model.statistic.PayStatisticModel">
+        select count(1) as payCount,sum(loan) loanAmount
+        from loan_a_payment_flow f
+        <where>
+            <if test="agencyId != null ">
+                and f.agency_id = #{agencyId}
+            </if>
+
+            <if test="yesterday!=null">
+                and f.payment_time &gt;= #{yesterday} and f.payment_time &lt;= #{yesterday}
+            </if>
+            <if test="type==1">
+                and f.guest=1
+            </if>
+            <if test="type==2">
+                and f.guest in(2,3)
+            </if>
+        </where>
+
+    </select>
+
+
+
+</mapper>

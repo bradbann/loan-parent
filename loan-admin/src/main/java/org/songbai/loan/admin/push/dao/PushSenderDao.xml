@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.push.dao.PushSenderDao">
+    <select id="selectSenderCount" resultType="java.lang.Integer">
+        select count(1) from dream_m_push_sender where  deleted=0
+        <if test="agencyId!=null">
+          and agency_id=#{agencyId}
+        </if>
+    </select>
+    <select id="selectSenderList" resultType="org.songbai.loan.admin.push.model.vo.PushSenderVO">
+        select * from dream_m_push_sender where  deleted=0
+        <if test="agencyId!=null">
+            and agency_id=#{agencyId}
+        </if>
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findPushSenderSelected" resultType="org.songbai.loan.model.sms.PushSenderModel">
+        select id,name from dream_m_push_sender  where  deleted=0 and status=1 and agency_id = #{agencyId}
+    </select>
+    <select id="findStartPushSenderByIdAndAgencyId" resultType="org.songbai.loan.model.sms.PushSenderModel">
+        select * from dream_m_push_sender where id =#{id} and   deleted=0  and status=1 and agency_id=#{agencyId} limit 1
+    </select>
+
+</mapper>

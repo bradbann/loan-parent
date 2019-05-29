@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.statistic.dao.RepayStatisticDao">
+
+    <select id="findStatisticRepaymentCount" resultType="java.lang.Integer">
+        select count(1) from (select count(1) from loan_s_repay p
+        <include refid="base_where"/>
+        <if test="po.isVest==0">
+            group by p.repay_date
+        </if>
+        ) a
+    </select>
+    <select id="findStatisticRepaymentList" resultType="org.songbai.loan.model.statistic.RepayStatisticModel">
+        select
+        <if test="po.isVest==1"> * </if>
+        <if test="po.isVest==0">
+            agency_id,vest_id,repay_date,
+            sum(order_count) as orderCount,sum(early_count) as earlyCount,
+            sum(normal_count) as normalCount,sum(overdue_repay_count) as overdueRepayCount,
+            sum(overdue_pay_count) as overduePayCount,sum(repay_fail_count) as repayFailCount,
+            sum(repay_amount) as repayAmount,sum(real_repay_amount) as realRepayAmount,
+            sum(pay_amount) as payAmount,sum(exceed_amount) as exceedAmount,
+            sum(deduct_amount) as deductAmount,sum(left_amount) as leftAmount,
+            sum(first_overdue_count) as firstOverdueCount,sum(overdue_count) as overdueCount,
+            sum(chase_one_count) as chaseOneCount,sum(chase_three_count) as chaseThreeCount,
+            sum(chase_seven_count) as chaseSevenCount,sum(chase_fifteen_count) as chaseFifteenCount
+        </if>
+        from loan_s_repay p
+        <include refid="base_where"/>
+        <if test="po.isVest==0">
+            group by p.repay_date
+        </if>
+        order by repay_date desc ,agency_id asc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findStatisticRepaymenByAngecyIdAndDate" resultType="org.songbai.loan.model.statistic.RepayStatisticModel">
+        select * from loan_s_repay
+        <where>
+            repay_date=#{date}
+            <if test="agencyId!=null">
+                And agency_id=#{agencyId}
+            </if>
+        </where>
+        limit 1
+    </select>
+    <sql id="base_where">
+        <where>
+            <if test="po.startDate!=null">
+                And p.repay_date &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And p.repay_date &lt;= #{po.endDate}
+            </if>
+            <if test="po.agencyId!=null">
+                And p.agency_id = #{po.agencyId}
+            </if>
+
+            <if test="po.isVest==1">
+                <if test="po.vestId!=null">
+                  and  p.vest_id=#{po.vestId}
+                </if>
+            </if>
+        </where>
+    </sql>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.statistic.dao.AuthenticationDao">
+
+    <select id="findUserAuthenticationStatisticByAgencyIdAndToday"
+            resultType="org.songbai.loan.model.statistic.UserStatisticModel">
+        select count(1) registerCount,
+               IFNULL(sum(if(idcard_status=1,1,0)),0) as idcardCount,
+               IFNULL(sum(if(face_status=1,1,0)),0) faceCount,
+               IFNULL(sum(if(info_status=1,1,0)),0) infoCount,
+               IFNULL(sum(if(phone_status=1,1,0)),0) phoneCount,
+               IFNULL(sum(if(alipay_status=1,1,0)),0) aliCount,
+               IFNULL(sum(if(bank_status=1,1,0)),0) bankCount
+        from loan_u_authentication
+        where DATE_FORMAT(create_time, '%Y-%m-%d') = #{date} and agency_id=#{agencyId}
+    </select>
+</mapper>

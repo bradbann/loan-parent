@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.songbai.loan.admin.statistic.dao.UserStatisticDao">
+
+    <select id="findStatisticUserCount" resultType="java.lang.Integer">
+        select count(1) from ( select count(1) from loan_s_user u
+        <include refid="base_where"/>
+        group by statistic_date,agency_id
+        <if test="po.isVest==1">,vest_id</if>
+        ) a
+    </select>
+    <select id="findStatisticUserList" resultType="org.songbai.loan.admin.statistic.model.vo.StatisticUserVO">
+        select
+        agency_id as agencyId,
+        <if test="po.isVest == 1">vest_id as vestId, </if>
+        statistic_date as statisticDate,
+        sum(register_count) as registerCount,
+        sum(login_count) as loginCount,
+        sum(idcard_count) as idcardCount,
+        sum(face_count) as faceCount,
+        sum(info_count) as infoCount,
+        sum(phone_count) as phoneCount,
+        sum(ali_count) as aliCount,
+        sum(bank_count) as bankCount,
+        sum(order_count) as orderCount,
+        sum(new_count) as newCount,
+        sum(old_count) as oldCount
+        from loan_s_user u
+        <include refid="base_where"/>
+        group by statistic_date,agency_id
+        <if test="po.isVest==1">,vest_id</if>
+
+        order by statistic_date desc ,agency_id asc
+        limit #{page.limit},#{page.pageSize}
+    </select>
+    <select id="findHomeUserStatisticByAgencyIdAndDate" resultType="org.songbai.loan.admin.statistic.model.vo.StatisHomeVO">
+        select
+        ifnull(sum(register_count),0) as registerCount,
+        ifnull(sum(login_count),0) as loginCount
+        from loan_s_user u
+
+        <where>
+            statistic_date=#{date}
+            <if test="agencyId!=null">
+                And u.agency_id=#{agencyId}
+            </if>
+        </where>
+        limit 1
+    </select>
+    <select id="findHomeUserStatisticAuthByAgencyIdAndDate" resultType="org.songbai.loan.admin.statistic.model.vo.StatisHomeVO">
+        select
+        ifnull(sum(if(DATE_FORMAT(face_time,'%Y-%m-%d') = #{date},1,0)),0) as faceCount,
+        ifnull(sum(if(DATE_FORMAT(idcard_time,'%Y-%m-%d') = #{date},1,0)),0) as idcardCount,
+        ifnull(sum(if(DATE_FORMAT(info_time,'%Y-%m-%d') = #{date},1,0)),0) as infoCount,
+        ifnull(sum(if(DATE_FORMAT(phone_time,'%Y-%m-%d') = #{date},1,0)),0) as phoneCount,
+        ifnull(sum(if(DATE_FORMAT(alipay_time,'%Y-%m-%d') = #{date},1,0)),0) as aliCount,
+        ifnull(sum(if(DATE_FORMAT(bank_time,'%Y-%m-%d') = #{date},1,0)),0) as bankCount
+        from
+        loan_u_authentication
+        <where>
+            <if test="agencyId!=null">
+                And agency_id=#{agencyId}
+            </if>
+        </where>
+
+    </select>
+
+    <sql id="base_where">
+        <where>
+            <if test="po.startDate!=null">
+                And u.statistic_date &gt;= #{po.startDate}
+            </if>
+            <if test="po.endDate!=null">
+                And u.statistic_date &lt;= #{po.endDate}
+            </if>
+            <if test="po.agencyId!=null">
+                And u.agency_id = #{po.agencyId}
+            </if>
+            <if test="po.isVest==1">
+                <if test="po.vestId!=null">
+                    and vest_id=#{po.vestId}
+                </if>
+            </if>
+        </where>
+    </sql>
+</mapper>
